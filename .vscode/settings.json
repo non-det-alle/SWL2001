@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "smtc_hal_mcu.h": "c",
+        "sx127x_hal.h": "c",
+        "smtc_hal_gpio.h": "c",
+        "cstdlib": "c",
+        "time.h": "c"
+    }
+}
