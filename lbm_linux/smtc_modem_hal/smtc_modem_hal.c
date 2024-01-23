@@ -43,6 +43,8 @@
 #include "smtc_modem_hal.h"
 #include "smtc_hal_dbg_trace.h"
 
+#include "smtc_hal_rtc.h"
+
 #include "modem_pinout.h"
 
 // for variadic args
@@ -135,17 +137,7 @@ void smtc_modem_hal_reload_wdog(void)
 
 uint32_t smtc_modem_hal_get_time_in_s(void)
 {
-
-    int error = sysinfo(&s_info);
-    if (error != 0)
-    {
-        printf("code error = %d\n", error);
-    }
-    else if (s_info.uptime < 0)
-    {
-        printf("sysinfo.uptime returned negative value");
-    }
-    return s_info.uptime;
+    return hal_rtc_get_time_ms();
 }
 
 uint32_t smtc_modem_hal_get_time_in_ms(void)
