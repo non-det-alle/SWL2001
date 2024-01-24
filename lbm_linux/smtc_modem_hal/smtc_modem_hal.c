@@ -44,6 +44,7 @@
 #include "smtc_hal_dbg_trace.h"
 
 #include "smtc_hal_rtc.h"
+#include "smtc_hal_lp_timer.h"
 
 #include "modem_pinout.h"
 
@@ -72,23 +73,6 @@
  * -----------------------------------------------------------------------------
  * --- PRIVATE CONSTANTS -------------------------------------------------------
  */
-#if defined(STM32L476xx)
-#define ADDR_FLASH_FUOTA ADDR_FLASH_PAGE_150
-#define ADDR_FLASH_STORE_AND_FORWARD ADDR_FLASH_PAGE_200
-#define ADDR_FLASH_SECURE_ELEMENT_CONTEXT ADDR_FLASH_PAGE_252
-#define ADDR_FLASH_MODEM_CONTEXT ADDR_FLASH_PAGE_253
-#define ADDR_FLASH_LORAWAN_CONTEXT ADDR_FLASH_PAGE_254
-#define ADDR_FLASH_MODEM_KEY_CONTEXT ADDR_FLASH_PAGE_255
-#endif
-
-#if defined(STM32L073xx)
-// Data eeprom base address is 0x08080000
-
-#define ADDR_EEPROM_LORAWAN_CONTEXT_OFFSET 0 // in case of multistack the size of the lorawan context shall be extended
-#define ADDR_EEPROM_MODEM_KEY_CONTEXT_OFFSET 50
-#define ADDR_EEPROM_MODEM_CONTEXT_OFFSET 75
-#define ADDR_EEPROM_SECURE_ELEMENT_CONTEXT_OFFSET 100
-#endif
 
 /*
  * -----------------------------------------------------------------------------
