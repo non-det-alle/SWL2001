@@ -55,10 +55,8 @@
 // for memcpy
 #include <string.h>
 
-#if defined(SX1272) || defined(SX1276)
 #include "smtc_modem_utilities.h"
 #include "sx127x.h"
-#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -358,17 +356,9 @@ uint32_t smtc_modem_hal_get_random_nb_in_range(const uint32_t val_1, const uint3
 
 void smtc_modem_hal_irq_config_radio_irq(void (*callback)(void *context), void *context)
 {
-#if defined(SX1272) || defined(SX1276)
     sx127x_t *radio = (sx127x_t *)smtc_modem_get_radio_context();
 
     sx127x_irq_attach(radio, callback, context);
-#else
-    radio_dio_irq.pin = RADIO_DIOX;
-    radio_dio_irq.callback = callback;
-    radio_dio_irq.context = context;
-
-    hal_gpio_irq_attach(&radio_dio_irq);
-#endif
 }
 
 void smtc_modem_hal_radio_irq_clear_pending(void)
@@ -404,9 +394,7 @@ uint32_t smtc_modem_hal_get_radio_tcxo_startup_delay_ms(void)
 
 void smtc_modem_hal_set_ant_switch(bool is_tx_on)
 {
-#if defined(SX127X)
-    hal_gpio_set_value(RADIO_ANTENNA_SWITCH, (is_tx_on == true) ? 1 : 0);
-#endif
+    // No antenna switching is used
 }
 
 /* ------------ Environment management ------------*/
@@ -418,7 +406,7 @@ uint8_t smtc_modem_hal_get_battery_level(void)
     // 0: The end-device is connected to an external power source.
     // 1..254: Battery level, where 1 is the minimum and 254 is the maximum.
     // 255: The end-device was not able to measure the battery level.
-    return 255;
+    return 0;
 }
 
 int8_t smtc_modem_hal_get_board_delay_ms(void)
