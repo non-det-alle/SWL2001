@@ -34,8 +34,6 @@
 #include <time.h>
 #include "smtc_hal_rtc.h"
 
-#include "smtc_hal_mcu.h"
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE MACROS-----------------------------------------------------------
@@ -74,13 +72,13 @@ static struct timespec hal_rtc_starttime;
 
 void hal_rtc_init(void)
 {
-    clock_gettime(RPI_RTC, &hal_rtc_starttime);
+    clock_gettime(CLOCK_REALTIME, &hal_rtc_starttime);
 }
 
 uint32_t hal_rtc_get_time_s(void)
 {
     struct timespec now;
-    clock_gettime(RPI_RTC, &now);
+    clock_gettime(CLOCK_REALTIME, &now);
 
     return now.tv_sec - hal_rtc_starttime.tv_sec - (now.tv_nsec < hal_rtc_starttime.tv_nsec);
 }
@@ -88,16 +86,16 @@ uint32_t hal_rtc_get_time_s(void)
 uint32_t hal_rtc_get_time_100us(void)
 {
     struct timespec now;
-    clock_gettime(RPI_RTC, &now);
+    clock_gettime(CLOCK_REALTIME, &now);
 
-    return (now->tv_sec - hal_rtc_starttime->tv_sec) * 1e4 + (now->tv_nsec - hal_rtc_starttime->tv_nsec) / 1e5 + .5;
+    return (now.tv_sec - hal_rtc_starttime.tv_sec) * 1e4 + (now.tv_nsec - hal_rtc_starttime.tv_nsec) / 1e5 + .5;
 }
 uint32_t hal_rtc_get_time_ms(void)
 {
     struct timespec now;
-    clock_gettime(RPI_RTC, &now);
+    clock_gettime(CLOCK_REALTIME, &now);
 
-    return (now->tv_sec - hal_rtc_starttime->tv_sec) * 1e3 + (now->tv_nsec - hal_rtc_starttime->tv_nsec) / 1e6 + .5;
+    return (now.tv_sec - hal_rtc_starttime.tv_sec) * 1e3 + (now.tv_nsec - hal_rtc_starttime.tv_nsec) / 1e6 + .5;
 }
 
 /*

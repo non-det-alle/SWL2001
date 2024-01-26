@@ -54,8 +54,6 @@
 
 #define ZERO ((struct timespec){.tv_sec = 0, .tv_nsec = 0})
 
-#define SIG(t) (SIGRTMIN + (t) > SIGRTMAX ? mcu_panic() : SIGRTMIN + (t))
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE TYPES -----------------------------------------------------------
@@ -65,6 +63,8 @@
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
+
+static int lptim_signo[HAL_LP_TIMER_NB];
 
 static timer_t lptim_handle[HAL_LP_TIMER_NB];
 
@@ -95,17 +95,23 @@ void hal_pl_timer_handler(int sig, siginfo_t *si, void *uc);
 
 void hal_lp_timer_init(hal_lp_timer_id_t id)
 {
-    hal_lp_timer_irq_enable(id); // establish handler
+    int signo = SIGRTMIN + id;
+    if (signo > SIGRTMAX) 
+    {
+        mcu_panic();
+    }
+    lptim_signo[id] = signo;
 
     struct sigevent sev;
     sev.sigev_notify = SIGEV_SIGNAL;
-    sev.sigev_signo = SIG(id);
+    sev.sigev_signo = signo;
     sev.sigev_value.sival_int = id; // pass id here
-    if (timer_create(RPI_RTC, &sev, &lptim_handle[id]) == -1)
+    if (timer_create(CLOCK_REALTIME, &sev, &lptim_handle[id]) == -1)
     {
         mcu_panic();
     }
 
+    hal_lp_timer_irq_enable(id); // establish handler for callback
     lptim_tmr_irq[id] = (hal_lp_timer_irq_t){.context = NULL, .callback = NULL};
 }
 
@@ -142,9 +148,9 @@ void hal_lp_timer_irq_enable(hal_lp_timer_id_t id)
     sa.sa_sigaction = hal_pl_timer_handler;
     sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
     sa.sa_flags = SA_SIGINFO | SA_RESTART;
-    if (sigaction(SIG(id), &sa, NULL) == -1)
+    if (sigaction(lptim_signo[id], &sa, NULL) == -1)
     {
-        mcu_panic()
+        mcu_panic();
     }
 }
 
@@ -155,9 +161,9 @@ void hal_lp_timer_irq_disable(hal_lp_timer_id_t id)
     sa.sa_handler = SIG_IGN;
     sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
     sa.sa_flags = 0;
-    if (sigaction(SIG(id), &sa, NULL) == -1)
+    if (sigaction(lptim_signo[id], &sa, NULL) == -1)
     {
-        mcu_panic()
+        mcu_panic();
     }
 }
 

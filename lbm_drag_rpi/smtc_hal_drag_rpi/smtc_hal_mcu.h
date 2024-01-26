@@ -45,8 +45,10 @@ extern "C" {
 
 #include <stdint.h>   // C99 types
 #include <stdbool.h>  // bool type
+#include <stdlib.h>
+#include <stdio.h>
 
-#include "smtc_hal_dbg_trace.h"
+//#include "smtc_hal_dbg_trace.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -59,10 +61,10 @@ extern "C" {
 #define mcu_panic( ... )                                    \
     do                                                      \
     {                                                       \
-        SMTC_HAL_TRACE_ERROR( "mcu_panic:%s\n", __func__ ); \
-        SMTC_HAL_TRACE_ERROR( "-> "__VA_ARGS__ );           \
-        hal_mcu_reset( );                                   \
-    } while( 0 );
+        printf( "mcu_panic:%s\n", __func__ );               \
+        printf( "-> "__VA_ARGS__ );                         \
+        exit( 1 );                                          \
+    } while( 0 )
 
 /*!
  * Begins critical section
