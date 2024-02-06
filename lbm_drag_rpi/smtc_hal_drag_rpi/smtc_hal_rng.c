@@ -1,7 +1,7 @@
 /*!
- * \file      smtc_hal_rtc.c
+ * \file      smtc_hal_rng.c
  *
- * \brief     RTC Hardware Abstraction Layer implementation
+ * \brief     Random Number Generator Hardware Abstraction Layer implementation
  *
  * MIT License
  *
@@ -31,8 +31,12 @@
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
-#include <time.h>
-#include "smtc_hal_rtc.h"
+#include <stdint.h>   // C99 types
+#include <stdbool.h>  // bool type
+
+#include <stdlib.h>  // random
+
+#include "smtc_hal_rng.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -44,10 +48,6 @@
  * --- PRIVATE CONSTANTS -------------------------------------------------------
  */
 
-// clang-format off
-
-// clang-format on
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE TYPES -----------------------------------------------------------
@@ -57,8 +57,6 @@
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
-
-static struct timespec hal_rtc_starttime;
 
 /*
  * -----------------------------------------------------------------------------
@@ -70,32 +68,37 @@ static struct timespec hal_rtc_starttime;
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void hal_rtc_init(void)
+uint32_t hal_rng_get_random( void )
 {
-    clock_gettime(RT_CLOCK, &hal_rtc_starttime);
+    return (uint32_t) random() | (uint32_t) (random() > RAND_MAX / 2.0) << 31;
 }
 
-uint32_t hal_rtc_get_time_s(void)
+uint32_t hal_rng_get_random_in_range( const uint32_t val_1, const uint32_t val_2 )
 {
-    struct timespec now;
-    clock_gettime(RT_CLOCK, &now);
-
-    return now.tv_sec - hal_rtc_starttime.tv_sec - (now.tv_nsec < hal_rtc_starttime.tv_nsec);
+    if( val_1 <= val_2 )
+    {
+        return ( uint32_t )( ( hal_rng_get_random( ) % ( val_2 - val_1 + 1 ) ) + val_1 );
+    }
+    else
+    {
+        return ( uint32_t )( ( hal_rng_get_random( ) % ( val_1 - val_2 + 1 ) ) + val_2 );
+    }
 }
 
-uint32_t hal_rtc_get_time_100us(void)
+int32_t hal_rng_get_signed_random_in_range( const int32_t val_1, const int32_t val_2 )
 {
-    struct timespec now;
-    clock_gettime(RT_CLOCK, &now);
+    uint32_t tmp_range = 0;  // ( val_1 <= val_2 ) ? ( val_2 - val_1 ) : ( val_1 - val_2 );
 
-    return (now.tv_sec - hal_rtc_starttime.tv_sec) * 1e4 + (now.tv_nsec - hal_rtc_starttime.tv_nsec) / 1e5 + .5;
-}
-uint32_t hal_rtc_get_time_ms(void)
-{
-    struct timespec now;
-    clock_gettime(RT_CLOCK, &now);
-
-    return (now.tv_sec - hal_rtc_starttime.tv_sec) * 1e3 + (now.tv_nsec - hal_rtc_starttime.tv_nsec) / 1e6 + .5;
+    if( val_1 <= val_2 )
+    {
+        tmp_range = ( val_2 - val_1 );
+        return ( int32_t )( ( val_1 + hal_rng_get_random_in_range( 0, tmp_range ) ) );
+    }
+    else
+    {
+        tmp_range = ( val_1 - val_2 );
+        return ( int32_t )( ( val_2 + hal_rng_get_random_in_range( 0, tmp_range ) ) );
+    }
 }
 
 /*

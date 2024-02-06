@@ -1,7 +1,7 @@
 /*!
- * \file      smtc_hal_rtc.h
+ * \file      smtc_hal_rng.h
  *
- * \brief     RTC Hardware Abstraction Layer definition
+ * \brief     Random Number Generator Hardware Abstraction Layer definition
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2021. All rights reserved.
@@ -31,13 +31,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __RTC_UTILITIES_H__
-#define __RTC_UTILITIES_H__
+#ifndef __SMTC_HAL_RNG_H__
+#define __SMTC_HAL_RNG_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /*
  * -----------------------------------------------------------------------------
  * --- DEPENDENCIES ------------------------------------------------------------
@@ -45,12 +44,11 @@ extern "C" {
 
 #include <stdint.h>   // C99 types
 #include <stdbool.h>  // bool type
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC MACROS -----------------------------------------------------------
  */
-
-#define RT_CLOCK CLOCK_MONOTONIC
 
 /*
  * -----------------------------------------------------------------------------
@@ -68,59 +66,38 @@ extern "C" {
  */
 
 /*!
- *  Initializes the MCU RTC peripheral
+ * Returns an hardware generated random number.
+ *
+ * \retval random Generated radom number
  */
-void hal_rtc_init( void );
+uint32_t hal_rng_get_random( void );
 
 /*!
- * Returns the current RTC time in seconds
+ * Returns an hardware generated unsigned random number between min and max
  *
- * \remark Used for scheduling autonomous retransmissions (i.e: NbTrans),
- *         transmitting MAC answers, basically any delay without accurate time
- *         constraints. It is also used to measure the time spent inside the
- *         LoRaWAN process for the integrated failsafe.
+ * \param [IN] val_1 first range unsigned value
+ * \param [IN] val_2 second range unsigned value
  *
- * retval rtc_time_s Current RTC time in seconds
+ * \retval random Generated random unsigned number between smallest value and biggest
+ * value between val_1 and val_2
  */
-uint32_t hal_rtc_get_time_s( void );
+uint32_t hal_rng_get_random_in_range( const uint32_t val_1, const uint32_t val_2 );
 
 /*!
- * Returns the current RTC time in milliseconds
+ * Returns an hardware generated signed random number between min and max
  *
- * \remark Used to timestamp radio events (i.e: end of TX), will also be used
- * for ClassB
+ * \param [IN] val_1 first range signed value
+ * \param [IN] val_2 second range signed value
  *
- * retval rtc_time_ms Current RTC time in milliseconds wraps every 49 days
+ * \retval random Generated random signed number between smallest value and biggest
+ * value between val_1 and val_2
  */
-uint32_t hal_rtc_get_time_ms( void );
-
-/*!
- * Returns the current RTC time in 0.1milliseconds
- *
- * \remark will also be used for d2d
- *
- *
- * retval rtc_time_ms Current RTC time in milliseconds wraps every 4.9 days
- */
-uint32_t hal_rtc_get_time_100us( void );
-
-/*!
- * Sets the rtc wakeup timer for milliseconds parameter. The RTC will generate
- * an IRQ to wakeup the MCU.
- *
- * \param[IN] milliseconds Number of seconds before wakeup
- */
-void hal_rtc_wakeup_timer_set_ms( const int32_t milliseconds );
-
-/*!
- * Stop the rtc wakeup timer
- */
-void hal_rtc_wakeup_timer_stop( void );
+int32_t hal_rng_get_signed_random_in_range( const int32_t val_1, const int32_t val_2 );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // __RTC_UTILITIES_H__
+#endif  // __SMTC_HAL_RNG_H__
 
 /* --- EOF ------------------------------------------------------------------ */
