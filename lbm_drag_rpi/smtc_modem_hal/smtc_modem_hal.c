@@ -43,8 +43,16 @@
 #include "smtc_modem_hal.h"
 #include "smtc_hal_dbg_trace.h"
 
-#include "smtc_hal_rtc.h"
+#include "smtc_hal_gpio.h"
 #include "smtc_hal_lp_timer.h"
+#include "smtc_hal_mcu.h"
+#include "smtc_hal_rng.h"
+#include "smtc_hal_rtc.h"
+#include "smtc_hal_trace.h"
+#include "smtc_hal_uart.h"
+#include "smtc_hal_watchdog.h"
+
+#include "smtc_hal_stack.h"
 
 #include "modem_pinout.h"
 
@@ -72,6 +80,11 @@
  * --- PRIVATE CONSTANTS -------------------------------------------------------
  */
 
+#define ADDR_STACK_LORAWAN_CONTEXT_OFFSET 0
+#define ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET 50
+#define ADDR_STACK_MODEM_CONTEXT_OFFSET 75
+#define ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET 100
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE TYPES -----------------------------------------------------------
@@ -82,9 +95,9 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-__attribute__((section(".noinit"))) static uint8_t crashlog_buff_noinit[CRASH_LOG_SIZE];
-__attribute__((section(".noinit"))) static volatile uint8_t crashlog_length_noinit;
-__attribute__((section(".noinit"))) static volatile bool crashlog_available_noinit;
+static uint8_t crashlog_buff_noinit[CRASH_LOG_SIZE];
+static volatile uint8_t crashlog_length_noinit;
+static volatile bool crashlog_available_noinit;
 
 /*
  * -----------------------------------------------------------------------------
@@ -100,7 +113,6 @@ __attribute__((section(".noinit"))) static volatile bool crashlog_available_noin
 void smtc_modem_hal_reset_mcu(void)
 {
     // What to do on linux?
-    // - Reset HAT with GPIO
     // hal_mcu_reset( );
 }
 
@@ -167,18 +179,73 @@ void smtc_modem_hal_enable_modem_irq(void)
 void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_t offset, uint8_t *buffer,
                                     const uint32_t size)
 {
-    // Do nothing?
+    // Offset is only used for fuota and store and forward purpose and for multistack features. 
+    // To avoid ram consumption the use of hal_stack_read_modify_write is only done in these cases
+    switch( ctx_type )
+    {
+    case CONTEXT_MODEM:
+        hal_stack_read_buffer( ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size );
+        break;
+    case CONTEXT_KEY_MODEM:
+        hal_stack_read_buffer( ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size );
+        break;
+    case CONTEXT_LORAWAN_STACK:
+        hal_stack_read_buffer( ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size );
+        break;
+    case CONTEXT_FUOTA:
+        // no fuota example on rpi
+        break;
+    case CONTEXT_STORE_AND_FORWARD:
+        // no store and fw example on rpi
+        break;
+    case CONTEXT_SECURE_ELEMENT:
+        hal_stack_read_buffer( ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size );
+        break;
+    default:
+        mcu_panic( );
+        break;
+    }
 }
 
 void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t offset, const uint8_t *buffer,
                                   const uint32_t size)
 {
-    // Do nothing?
+    // Offset is only used for fuota and store and forward purpose and for multistack features. 
+    // To avoid ram consumption the use of hal_stack_read_modify_write is only done in these cases
+    switch (ctx_type)
+    {
+    case CONTEXT_MODEM:
+        hal_stack_write_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
+        break;
+    case CONTEXT_KEY_MODEM:
+        hal_stack_write_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
+        break;
+    case CONTEXT_LORAWAN_STACK:
+        hal_stack_write_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
+        break;
+    case CONTEXT_FUOTA:
+        // no fuota example on rpi
+        break;
+    case CONTEXT_STORE_AND_FORWARD:
+        // no store and fw example on rpi
+        break;
+    case CONTEXT_SECURE_ELEMENT:
+        hal_stack_write_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
+        break;
+    default:
+        mcu_panic();
+        break;
+    }
 }
 
 void smtc_modem_hal_context_flash_pages_erase(const modem_context_type_t ctx_type, uint32_t offset, uint8_t nb_page)
 {
-    // Do nothing?
+    switch (ctx_type)
+    {
+    default:
+        mcu_panic();
+        break;
+    };
 }
 
 /* ------------ crashlog management ------------*/
