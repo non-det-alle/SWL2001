@@ -49,8 +49,6 @@
 #include "smtc_hal_rng.h"
 #include "smtc_hal_rtc.h"
 #include "smtc_hal_trace.h"
-#include "smtc_hal_uart.h"
-#include "smtc_hal_watchdog.h"
 
 #include "smtc_hal_stack.h"
 
@@ -120,8 +118,7 @@ void smtc_modem_hal_reset_mcu(void)
 
 void smtc_modem_hal_reload_wdog(void)
 {
-    // Skippable
-    // hal_watchdog_reload();
+    // only called by tests
 }
 
 /* ------------ Time management ------------*/
@@ -160,18 +157,14 @@ void smtc_modem_hal_disable_modem_irq(void)
 {
     hal_gpio_irq_disable();
     hal_lp_timer_irq_disable(HAL_LP_TIMER_ID_1);
-#if (SX127X)
     hal_lp_timer_irq_disable(HAL_LP_TIMER_ID_2);
-#endif
 }
 
 void smtc_modem_hal_enable_modem_irq(void)
 {
     hal_gpio_irq_enable();
     hal_lp_timer_irq_enable(HAL_LP_TIMER_ID_1);
-#if (SX127X)
     hal_lp_timer_irq_enable(HAL_LP_TIMER_ID_2);
-#endif
 }
 
 /* ------------ Context saving management ------------*/
