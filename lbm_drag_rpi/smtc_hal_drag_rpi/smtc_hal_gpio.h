@@ -135,7 +135,7 @@ void hal_gpio_irq_attach( const hal_gpio_irq_t* irq );
  *
  * \param [in] irq     Pointer to IRQ data context
  */
-void hal_gpio_irq_deatach( const hal_gpio_irq_t* irq );
+void hal_gpio_irq_detach( const hal_gpio_irq_t* irq );
 
 /*!
  * Enables all GPIO MCU interrupts
