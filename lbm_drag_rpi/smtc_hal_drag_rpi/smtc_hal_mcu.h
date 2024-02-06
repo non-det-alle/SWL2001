@@ -48,7 +48,7 @@ extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 
-//#include "smtc_hal_dbg_trace.h"
+#include "smtc_hal_dbg_trace.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -61,9 +61,9 @@ extern "C" {
 #define mcu_panic( ... )                                    \
     do                                                      \
     {                                                       \
-        printf( "mcu_panic:%s\n", __func__ );               \
-        printf( "-> "__VA_ARGS__ );                         \
-        exit( 1 );                                          \
+        SMTC_HAL_TRACE_ERROR( "mcu_panic:%s\n", __func__ ); \
+        SMTC_HAL_TRACE_ERROR( "-> "__VA_ARGS__ );           \
+        hal_mcu_reset( );                                   \
     } while( 0 )
 
 /*!
