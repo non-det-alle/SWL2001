@@ -97,7 +97,7 @@ void hal_pl_timer_handler(int sig, siginfo_t *si, void *uc);
 void hal_lp_timer_init(hal_lp_timer_id_t id)
 {
     int signo = SIGRTMIN + id;
-    if (signo > SIGRTMAX) 
+    if (signo > SIGRTMAX)
     {
         mcu_panic();
     }
@@ -114,6 +114,15 @@ void hal_lp_timer_init(hal_lp_timer_id_t id)
 
     hal_lp_timer_irq_enable(id); // establish handler for callback
     lptim_tmr_irq[id] = (hal_lp_timer_irq_t){.context = NULL, .callback = NULL};
+}
+
+void hal_lp_timer_de_init(hal_lp_timer_id_t id)
+{
+    hal_lp_timer_irq_disable(id);
+    if (timer_delete(lptim_handle[id]) == -1)
+    {
+        mcu_panic();
+    }
 }
 
 void hal_lp_timer_start(hal_lp_timer_id_t id, const uint32_t milliseconds, const hal_lp_timer_irq_t *tmr_irq)

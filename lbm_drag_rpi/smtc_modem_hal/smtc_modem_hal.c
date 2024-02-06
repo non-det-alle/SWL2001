@@ -110,8 +110,7 @@ static volatile bool crashlog_available_noinit;
 /* ------------ Reset management ------------*/
 void smtc_modem_hal_reset_mcu(void)
 {
-    // What to do on linux?
-    // hal_mcu_reset( );
+    hal_mcu_reset( );
 }
 
 /* ------------ Watchdog management ------------*/

@@ -177,12 +177,12 @@ uint32_t hal_gpio_get_value(const hal_gpio_pin_names_t pin)
 
 void hal_gpio_clear_pending_irq(const hal_gpio_pin_names_t pin)
 {
-    // ?
+    // IRQ cannot pend
 }
 
 void hal_gpio_enable_clock(const hal_gpio_pin_names_t pin)
 {
-   // used to enable SPI pins clk, but already enabled on RPi?
+   // supposedly already enabled by pigpio
 }
 
 /*
