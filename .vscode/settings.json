@@ -2,7 +2,8 @@
     "files.associations": {
         "*.h": "c",
         "*.c": "c",
-        "random": "c"
+        "random": "c",
+        "memory": "c"
     },
     "editor.formatOnSave": false
 }
