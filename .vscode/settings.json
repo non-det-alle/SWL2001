@@ -3,5 +3,6 @@
         "*.h": "c",
         "*.c": "c",
         "random": "c"
-    }
+    },
+    "editor.formatOnSave": false
 }

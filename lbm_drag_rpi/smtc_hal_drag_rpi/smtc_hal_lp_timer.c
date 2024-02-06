@@ -36,6 +36,7 @@
 
 #include "smtc_hal_lp_timer.h"
 #include "smtc_hal_mcu.h"
+#include "smtc_hal_rtc.h"
 
 #include <time.h>
 #include <signal.h>
@@ -106,7 +107,7 @@ void hal_lp_timer_init(hal_lp_timer_id_t id)
     sev.sigev_notify = SIGEV_SIGNAL;
     sev.sigev_signo = signo;
     sev.sigev_value.sival_int = id; // pass id here
-    if (timer_create(CLOCK_REALTIME, &sev, &lptim_handle[id]) == -1)
+    if (timer_create(RT_CLOCK, &sev, &lptim_handle[id]) == -1)
     {
         mcu_panic();
     }
