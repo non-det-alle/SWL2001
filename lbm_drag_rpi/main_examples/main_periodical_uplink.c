@@ -212,14 +212,6 @@ void main_periodical_uplink(void)
     // called immediately after the first call to smtc_modem_run_engine because of the reset detection
     smtc_modem_init(&modem_event_callback);
 
-    // Configure Nucleo blue button as EXTI
-    hal_gpio_irq_t nucleo_blue_button = {
-        .pin = EXTI_BUTTON,
-        .context = NULL,                  // context pass to the callback - not used in this example
-        .callback = user_button_callback, // callback called when EXTI is triggered
-    };
-    hal_gpio_init_in(EXTI_BUTTON, BSP_GPIO_PULL_MODE_NONE, BSP_GPIO_IRQ_MODE_FALLING, &nucleo_blue_button);
-
     // Init done: enable interruption
     hal_mcu_enable_irq();
 
