@@ -32,6 +32,7 @@
  */
 #include <stdint.h>  // C99 types
 #include <stdbool.h> // bool type
+#include <stdlib.h>  // exit
 
 #include "smtc_hal_gpio.h"
 #include <pigpio.h>
@@ -156,7 +157,11 @@ void hal_gpio_irq_disable(void)
     {
         if (gpio_irq[i] != NULL)
         {
-            gpioSetISRFunc(gpio_irq[i]->pin, 0, 0, NULL);
+            if (gpioSetISRFunc(gpio_irq[i]->pin, 0, 0, NULL) != 0)
+            {
+                // no panic to avoid error-looping
+                exit(-2);
+            }
         }
     }
 }
@@ -182,7 +187,7 @@ void hal_gpio_clear_pending_irq(const hal_gpio_pin_names_t pin)
 
 void hal_gpio_enable_clock(const hal_gpio_pin_names_t pin)
 {
-   // supposedly already enabled by pigpio
+    // supposedly already enabled by pigpio
 }
 
 /*

@@ -121,7 +121,8 @@ void hal_lp_timer_de_init(hal_lp_timer_id_t id)
     hal_lp_timer_irq_disable(id);
     if (timer_delete(lptim_handle[id]) == -1)
     {
-        mcu_panic();
+        // no panic to avoid error-looping
+        exit(-2);
     }
 }
 

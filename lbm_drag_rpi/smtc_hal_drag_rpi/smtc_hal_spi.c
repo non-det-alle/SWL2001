@@ -83,7 +83,8 @@ void hal_spi_de_init(const uint32_t id)
 {
     if (spiClose(spi_handle) != 0)
     {
-        mcu_panic();
+        // no panic to avoid error-looping
+        exit(-2);
     }
 }
 

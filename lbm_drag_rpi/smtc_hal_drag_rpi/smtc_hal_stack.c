@@ -75,14 +75,12 @@ void hal_stack_write_buffer(uint32_t addr, const uint8_t *buffer, uint32_t size)
 {
     // segfault protection, could still overwrite
     assert(size < MEM_SIZE && addr < MEM_SIZE - size);
-    assert(sizeof(buffer) >= size);
     memcpy(memory + addr, buffer, size);
 }
 
 void hal_stack_read_buffer(uint32_t addr, uint8_t *buffer, uint32_t size)
 {
     assert(size < MEM_SIZE && addr < MEM_SIZE - size);
-    assert(sizeof(buffer) >= size);
     memcpy(buffer, memory + addr, size);
 }
 
