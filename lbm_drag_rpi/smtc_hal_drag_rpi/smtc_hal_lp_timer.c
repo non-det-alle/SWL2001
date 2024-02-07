@@ -157,7 +157,7 @@ void hal_lp_timer_irq_enable(hal_lp_timer_id_t id)
     struct sigaction sa;
     sa.sa_sigaction = hal_pl_timer_handler;
     sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
-    sa.sa_flags = SA_SIGINFO | SA_RESTART;
+    sa.sa_flags = SA_SIGINFO; // | SA_RESTART;
     if (sigaction(lptim_signo[id], &sa, NULL) == -1)
     {
         mcu_panic();

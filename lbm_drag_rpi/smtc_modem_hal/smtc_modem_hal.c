@@ -270,7 +270,7 @@ bool smtc_modem_hal_crashlog_get_status(void)
 void smtc_modem_hal_on_panic(uint8_t *func, uint32_t line, const char *fmt, ...)
 {
     uint8_t out_buff[255] = {0};
-    uint8_t out_len = snprintf((char *)out_buff, sizeof(out_buff), "%s:%lu ", func, line);
+    uint8_t out_len = snprintf((char *)out_buff, sizeof(out_buff), "%s:%u ", func, line);
 
     va_list args;
     va_start(args, fmt);
