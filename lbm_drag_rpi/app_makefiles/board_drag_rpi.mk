@@ -7,11 +7,9 @@
 #-----------------------------------------------------------------------------
 
 #MCU compilation flags
-MCU_FLAGS ?= -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits
+MCU_FLAGS ?= -mcpu=cortex-a53 -mtune=cortex-a53
 
-BOARD_C_DEFS = 
-
-BOARD_LDSCRIPT = 
+BOARD_C_DEFS = -D_POSIX_C_SOURCE=199309L -D_XOPEN_SOURCE=600
 
 #-----------------------------------------------------------------------------
 # Hardware-specific sources
@@ -32,4 +30,6 @@ BOARD_ASM_SOURCES =
 BOARD_C_INCLUDES =  \
 	-I.\
 	-Ismtc_modem_hal\
-	-Ismtc_hal_drag_rpi
+	-Ismtc_hal_drag_rpi\
+	-I/usr/local/include\
+	-I/usr/include

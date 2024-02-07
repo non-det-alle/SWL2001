@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------------
 # Build system binaries
 #-----------------------------------------------------------------------------
-PREFIX = arm-none-eabi-
+PREFIX = aarch64-linux-gnu-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
@@ -197,14 +197,14 @@ CFLAGS += -std=c17
 # Link flags
 #-----------------------------------------------------------------------------
 # libraries
-LIBS += -lstdc++ -lsupc++ -lm -lc -lnosys -lpigpio
+LIBS += -lm -lc -lpigpio
 
-LIBDIR =
+LIBDIR = -L/usr/aarch64-linux-gnu/lib
 
 LDFLAGS += $(MCU_FLAGS)
-LDFLAGS += --specs=nano.specs
-LDFLAGS += --specs=nosys.specs
-LDFLAGS += -T$(BOARD_LDSCRIPT) $(LIBDIR) $(LIBS)
+#LDFLAGS += --specs=nano.specs
+#LDFLAGS += --specs=nosys.specs
+LDFLAGS += $(LIBDIR) $(LIBS)
 LDFLAGS += -Wl,--cref # Cross-reference table
 LDFLAGS += -Wl,--print-memory-usage # Display ram/flash memory usage
 LDFLAGS += -Wl,--gc-sections # Garbage collect unused sections
