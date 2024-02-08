@@ -118,11 +118,10 @@ void hal_lp_timer_init(hal_lp_timer_id_t id)
 
 void hal_lp_timer_de_init(hal_lp_timer_id_t id)
 {
-    hal_lp_timer_irq_disable(id);
     if (timer_delete(lptim_handle[id]) == -1)
     {
-        // no panic to avoid error-looping
-        exit(-2);
+        // no reset to avoid error-looping
+        mcu_panic_trace();
     }
 }
 
@@ -174,6 +173,7 @@ void hal_lp_timer_irq_disable(hal_lp_timer_id_t id)
     sa.sa_flags = 0;
     if (sigaction(lptim_signo[id], &sa, NULL) == -1)
     {
+        // no reset to avoid error-looping
         mcu_panic();
     }
 }

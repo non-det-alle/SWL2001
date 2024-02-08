@@ -61,10 +61,16 @@ extern "C" {
 #define mcu_panic( ... )                                    \
     do                                                      \
     {                                                       \
-        SMTC_HAL_TRACE_ERROR( "mcu_panic:%s\n", __func__ ); \
-        SMTC_HAL_TRACE_ERROR( "-> "__VA_ARGS__ );           \
+        mcu_panic_trace( );                                 \
         hal_mcu_reset( );                                   \
     } while( 0 )
+
+#define mcu_panic_trace( ... )                              \
+    do                                                      \
+    {                                                       \
+        SMTC_HAL_TRACE_ERROR( "mcu_panic:%s\n", __func__ ); \
+        SMTC_HAL_TRACE_ERROR( "-> "__VA_ARGS__ );           \
+    } while ( 0 )
 
 /*!
  * Begins critical section

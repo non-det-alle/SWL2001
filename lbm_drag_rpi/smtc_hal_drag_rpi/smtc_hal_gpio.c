@@ -35,6 +35,8 @@
 #include <stdlib.h>  // exit
 
 #include "smtc_hal_gpio.h"
+#include "smtc_hal_mcu.h"
+#include "smtc_hal_dbg_trace.h"
 #include <pigpio.h>
 
 /*
@@ -82,6 +84,12 @@ static hal_gpio_irq_t const *gpio_irq[P_NUM];
  */
 
 /*!
+ * GPIO initialize
+ */
+void hal_pigpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
+                     const uint32_t pull_mode, const uint32_t io_mode);
+
+/*!
  * GPIO IRQ callback
  */
 void hal_gpio_irq_callback(int gpio, int level, uint32_t tick);
@@ -103,9 +111,7 @@ void hal_gpio_init_in(const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_t
         irq->pin = pin;
     }
 
-    gpioWrite(pin, PI_CLEAR);
-    gpioSetPullUpDown(pin, pulls[pull_mode]);
-    gpioSetMode(pin, PI_INPUT);
+    hal_pigpio_init(pin, PI_CLEAR, pulls[pull_mode], PI_INPUT);
 
     uint8_t mode = modes[irq_mode];
     if ((mode == RISING_EDGE) || (mode == FALLING_EDGE) ||
@@ -119,9 +125,7 @@ void hal_gpio_init_in(const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_t
 
 void hal_gpio_init_out(const hal_gpio_pin_names_t pin, const uint32_t value)
 {
-    gpioWrite(pin, (value != 0) ? PI_SET : PI_CLEAR);
-    gpioSetPullUpDown(pin, PI_PUD_OFF);
-    gpioSetMode(pin, PI_OUTPUT);
+    hal_pigpio_init(pin, value, PI_PUD_OFF, PI_OUTPUT);
 }
 
 void hal_gpio_irq_attach(const hal_gpio_irq_t *irq)
@@ -146,7 +150,10 @@ void hal_gpio_irq_enable(void)
     {
         if (gpio_irq[i] != NULL && gpio_irq_mode[i] != BSP_GPIO_IRQ_MODE_OFF)
         {
-            gpioSetISRFunc(gpio_irq[i]->pin, modes[gpio_irq_mode[i]], 0, hal_gpio_irq_callback);
+            if (gpioSetISRFunc(gpio_irq[i]->pin, modes[gpio_irq_mode[i]], 0, hal_gpio_irq_callback) != 0)
+            {
+                mcu_panic();
+            }
         }
     }
 }
@@ -159,8 +166,8 @@ void hal_gpio_irq_disable(void)
         {
             if (gpioSetISRFunc(gpio_irq[i]->pin, 0, 0, NULL) != 0)
             {
-                // no panic to avoid error-looping
-                exit(-2);
+                // no reset to avoid error-looping
+                mcu_panic_trace();
             }
         }
     }
@@ -172,12 +179,20 @@ void hal_gpio_irq_disable(void)
 
 void hal_gpio_set_value(const hal_gpio_pin_names_t pin, const uint32_t value)
 {
-    gpioWrite(pin, (value != 0) ? PI_SET : PI_CLEAR);
+    if (gpioWrite(pin, (value != 0) ? PI_SET : PI_CLEAR) != 0)
+    {
+        mcu_panic();
+    }
 }
 
 uint32_t hal_gpio_get_value(const hal_gpio_pin_names_t pin)
 {
-    return gpioRead(pin);
+    int value = gpioRead(pin);
+    if (value == PI_BAD_GPIO)
+    {
+        mcu_panic();
+    }
+    return value;
 }
 
 void hal_gpio_clear_pending_irq(const hal_gpio_pin_names_t pin)
@@ -194,6 +209,20 @@ void hal_gpio_enable_clock(const hal_gpio_pin_names_t pin)
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
+
+void hal_pigpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
+                     const uint32_t pull_mode, const uint32_t io_mode)
+{
+    hal_gpio_set_value(pin, value);
+    if (gpioSetPullUpDown(pin, pull_mode) != 0)
+    {
+        mcu_panic();
+    }
+    if (gpioSetMode(pin, io_mode) != 0)
+    {
+        mcu_panic();
+    }
+}
 
 void hal_gpio_irq_callback(int gpio, int level, uint32_t tick)
 {
