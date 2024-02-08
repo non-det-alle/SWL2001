@@ -1,7 +1,7 @@
 /*!
- * \file      smtc_hal_stack.c
+ * \file      smtc_hal_nvm.c
  *
- * \brief     STACK Hardware Abstraction Layer implementation
+ * \brief     NVM Hardware Abstraction Layer implementation
  *
  * MIT License
  *
@@ -33,8 +33,11 @@
 
 #include <stdint.h>  // C99 types
 #include <stdbool.h> // bool type
+#include <fcntl.h>   // open, close
+#include <unistd.h>  // lseek, read, write
 
-#include "smtc_hal_stack.h"
+#include "smtc_hal_nvm.h"
+#include "smtc_hal_mcu.h"
 
 #include <string.h> // memcpy
 #include <assert.h> // assert
@@ -59,7 +62,9 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-static uint8_t memory[MEM_SIZE];
+static const char *restrict pathname = "/tmp/lorawan-dragino-nvm";
+
+int f;
 
 /*
  * -----------------------------------------------------------------------------
@@ -71,17 +76,44 @@ static uint8_t memory[MEM_SIZE];
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void hal_stack_write_buffer(uint32_t addr, const uint8_t *buffer, uint32_t size)
+void hal_nvm_write_buffer(uint32_t addr, const uint8_t *buffer, uint32_t size)
 {
-    // segfault protection, could still overwrite
-    assert(size < MEM_SIZE && addr < MEM_SIZE - size);
-    memcpy(memory + addr, buffer, size);
+    if ((f = open(pathname, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR)) < 0)
+    {
+        mcu_panic();
+    }
+    if (lseek(f, addr, SEEK_SET) < 0)
+    {
+        mcu_panic();
+    }
+    if (write(f, buffer, size) < 0)
+    {
+        mcu_panic();
+    }
+    if (close(f) < 0)
+    {
+        mcu_panic();
+    }
 }
 
-void hal_stack_read_buffer(uint32_t addr, uint8_t *buffer, uint32_t size)
+void hal_nvm_read_buffer(uint32_t addr, uint8_t *buffer, uint32_t size)
 {
-    assert(size < MEM_SIZE && addr < MEM_SIZE - size);
-    memcpy(buffer, memory + addr, size);
+    if ((f = open(pathname, O_RDONLY | O_CREAT, S_IRUSR | S_IWUSR)) < 0)
+    {
+        mcu_panic();
+    }
+    if (lseek(f, addr, SEEK_SET) < 0)
+    {
+        mcu_panic();
+    }
+    if (read(f, buffer, size) < 0)
+    {
+        mcu_panic();
+    }
+    if (close(f) < 0)
+    {
+        mcu_panic();
+    }
 }
 
 /*

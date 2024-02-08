@@ -1,7 +1,7 @@
 /*!
- * \file      smtc_hal_stack.h
+ * \file      smtc_hal_nvm.h
  *
- * \brief     STACK Hardware Abstraction Layer definition
+ * \brief     NVM Hardware Abstraction Layer definition
  *
  * MIT License
  *
@@ -25,8 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef __SMTC_HAL_STACK_H__
-#define __SMTC_HAL_STACK_H__
+#ifndef __SMTC_HAL_NVM_H__
+#define __SMTC_HAL_NVM_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,8 +50,6 @@ extern "C" {
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
-#define MEM_SIZE 1024
-
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC TYPES ------------------------------------------------------------
@@ -63,27 +61,27 @@ extern "C" {
  */
 
 /**
- * @brief Writes the given buffer to the STACK at the specified address.
+ * @brief Writes the given buffer to the NVM at the specified address.
  *
- * @param [in] addr STACK address to write to
- * @param [in] buffer Pointer to the buffer to be written.
- * @param [in] size Size of the buffer to be written.
+ * @param [in] addr    NVM address to write to
+ * @param [in] buffer  Pointer to the buffer to be written.
+ * @param [in] size    Size of the buffer to be written.
  */
-void hal_stack_write_buffer( uint32_t addr, const uint8_t* buffer, uint32_t size );
+void hal_nvm_write_buffer( uint32_t addr, const uint8_t* buffer, uint32_t size );
 
 /**
- * @brief Reads the STACK at the specified address to the given buffer.
+ * @brief Reads the NVM at the specified address to the given buffer.
  *
- * @param [in]  addr    STACK address to read from
+ * @param [in]  addr    NVM address to read from
  * @param [out] buffer  Pointer to the buffer to be written with read data.
  * @param [in]  size    Size of the buffer to be read.
  */
-void hal_stack_read_buffer( uint32_t addr, uint8_t* buffer, uint32_t size );
+void hal_nvm_read_buffer( uint32_t addr, uint8_t* buffer, uint32_t size );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // __SMTC_HAL_STACK_H__
+#endif  // __SMTC_HAL_NVM_H__
 
 /* --- EOF ------------------------------------------------------------------ */
