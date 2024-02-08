@@ -29,7 +29,7 @@ BIN = $(CP) -O binary -S
 # Board selection
 #-----------------------------------------------------------------------------
 
-ifeq ($(BOARD),Dragino_RPi)
+ifeq ($(BOARD),DRAGINO_RPI)
 -include app_makefiles/board_drag_rpi.mk
 BOARD_TARGET=DRPi
 endif
