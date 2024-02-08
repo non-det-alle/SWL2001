@@ -265,19 +265,12 @@ static void modem_event_callback(void)
         case SMTC_MODEM_EVENT_RESET:
             SMTC_HAL_TRACE_INFO("Event received: RESET\n");
 
-#if !defined(USE_LR11XX_CREDENTIALS)
             // Set user credentials
             ASSERT_SMTC_MODEM_RC(smtc_modem_set_deveui(stack_id, user_dev_eui));
             ASSERT_SMTC_MODEM_RC(smtc_modem_set_joineui(stack_id, user_join_eui));
             ASSERT_SMTC_MODEM_RC(smtc_modem_set_appkey(stack_id, user_gen_app_key));
             ASSERT_SMTC_MODEM_RC(smtc_modem_set_nwkkey(stack_id, user_app_key));
-#else
-            // Get internal credentials
-            ASSERT_SMTC_MODEM_RC(smtc_modem_get_chip_eui(stack_id, chip_eui));
-            SMTC_HAL_TRACE_ARRAY("CHIP_EUI", chip_eui, SMTC_MODEM_EUI_LENGTH);
-            ASSERT_SMTC_MODEM_RC(smtc_modem_get_pin(stack_id, chip_pin));
-            SMTC_HAL_TRACE_ARRAY("CHIP_PIN", chip_pin, SMTC_MODEM_PIN_LENGTH);
-#endif
+
             // Set user region
             ASSERT_SMTC_MODEM_RC(smtc_modem_set_region(stack_id, MODEM_EXAMPLE_REGION));
             // Schedule a Join LoRaWAN network

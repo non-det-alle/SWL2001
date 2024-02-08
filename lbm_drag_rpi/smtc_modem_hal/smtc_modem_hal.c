@@ -124,7 +124,7 @@ void smtc_modem_hal_reload_wdog(void)
 
 uint32_t smtc_modem_hal_get_time_in_s(void)
 {
-    return hal_rtc_get_time_ms();
+    return hal_rtc_get_time_s();
 }
 
 uint32_t smtc_modem_hal_get_time_in_ms(void)
