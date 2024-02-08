@@ -219,15 +219,6 @@ void main_periodical_uplink(void)
 
     while (1)
     {
-        smtc_modem_status_mask_t status_mask = 0;
-        smtc_modem_get_status(STACK_ID, &status_mask);
-        // Check if the device has already joined a network
-        if ((status_mask & SMTC_MODEM_STATUS_JOINED) == SMTC_MODEM_STATUS_JOINED)
-        {
-            // Send the uplink counter on port 102
-            send_uplink_counter_on_port(102);
-        }
-
         // Modem process launch
         sleep_time_ms = smtc_modem_run_engine();
 
