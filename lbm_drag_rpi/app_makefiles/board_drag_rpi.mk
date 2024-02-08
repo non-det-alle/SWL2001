@@ -16,7 +16,7 @@ BOARD_C_DEFS = -D_POSIX_C_SOURCE=199309L -D_XOPEN_SOURCE=600
 #-----------------------------------------------------------------------------
 BOARD_C_SOURCES = \
 	smtc_modem_hal/smtc_modem_hal.c\
-	smtc_hal_drag_rpi/smtc_hal_stack.c\
+	smtc_hal_drag_rpi/smtc_hal_nvm.c\
 	smtc_hal_drag_rpi/smtc_hal_gpio.c\
 	smtc_hal_drag_rpi/smtc_hal_mcu.c\
 	smtc_hal_drag_rpi/smtc_hal_rtc.c\
@@ -31,5 +31,4 @@ BOARD_C_INCLUDES =  \
 	-I.\
 	-Ismtc_modem_hal\
 	-Ismtc_hal_drag_rpi\
-	-I/usr/local/include\
-	-I/usr/include
+	-I/usr/aarch64-linux-gnu/include

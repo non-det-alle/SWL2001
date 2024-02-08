@@ -50,7 +50,7 @@
 #include "smtc_hal_rtc.h"
 #include "smtc_hal_trace.h"
 
-#include "smtc_hal_stack.h"
+#include "smtc_hal_nvm.h"
 
 #include "modem_pinout.h"
 
@@ -172,17 +172,17 @@ void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_
                                     const uint32_t size)
 {
     // Offset is only used for fuota and store and forward purpose and for multistack features.
-    // To avoid ram consumption the use of hal_stack_read_modify_write is only done in these cases
+    // To avoid ram consumption the use of hal_nvm_read_modify_write is only done in these cases
     switch (ctx_type)
     {
     case CONTEXT_MODEM:
-        hal_stack_read_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_read_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
         break;
     case CONTEXT_KEY_MODEM:
-        hal_stack_read_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_read_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
         break;
     case CONTEXT_LORAWAN_STACK:
-        hal_stack_read_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
+        hal_nvm_read_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
         break;
     case CONTEXT_FUOTA:
         // no fuota example on rpi
@@ -191,7 +191,7 @@ void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_
         // no store and fw example on rpi
         break;
     case CONTEXT_SECURE_ELEMENT:
-        hal_stack_read_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_read_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
         break;
     default:
         mcu_panic();
@@ -203,17 +203,17 @@ void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t 
                                   const uint32_t size)
 {
     // Offset is only used for fuota and store and forward purpose and for multistack features.
-    // To avoid ram consumption the use of hal_stack_read_modify_write is only done in these cases
+    // To avoid ram consumption the use of hal_nvm_read_modify_write is only done in these cases
     switch (ctx_type)
     {
     case CONTEXT_MODEM:
-        hal_stack_write_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_write_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
         break;
     case CONTEXT_KEY_MODEM:
-        hal_stack_write_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_write_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
         break;
     case CONTEXT_LORAWAN_STACK:
-        hal_stack_write_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
+        hal_nvm_write_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
         break;
     case CONTEXT_FUOTA:
         // no fuota example on rpi
@@ -222,7 +222,7 @@ void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t 
         // no store and fw example on rpi
         break;
     case CONTEXT_SECURE_ELEMENT:
-        hal_stack_write_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_write_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
         break;
     default:
         mcu_panic();
