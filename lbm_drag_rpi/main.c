@@ -83,7 +83,7 @@
  */
 
 /*!
- * Restart on mcu_panic
+ * Fork-loop to restart on mcu_panic
  */
 int main(void)
 {

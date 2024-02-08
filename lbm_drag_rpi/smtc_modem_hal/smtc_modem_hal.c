@@ -110,7 +110,7 @@ static volatile bool crashlog_available_noinit;
 /* ------------ Reset management ------------*/
 void smtc_modem_hal_reset_mcu(void)
 {
-    hal_mcu_reset( );
+    hal_mcu_reset();
 }
 
 /* ------------ Watchdog management ------------*/
@@ -171,18 +171,18 @@ void smtc_modem_hal_enable_modem_irq(void)
 void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_t offset, uint8_t *buffer,
                                     const uint32_t size)
 {
-    // Offset is only used for fuota and store and forward purpose and for multistack features. 
+    // Offset is only used for fuota and store and forward purpose and for multistack features.
     // To avoid ram consumption the use of hal_stack_read_modify_write is only done in these cases
-    switch( ctx_type )
+    switch (ctx_type)
     {
     case CONTEXT_MODEM:
-        hal_stack_read_buffer( ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size );
+        hal_stack_read_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
         break;
     case CONTEXT_KEY_MODEM:
-        hal_stack_read_buffer( ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size );
+        hal_stack_read_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
         break;
     case CONTEXT_LORAWAN_STACK:
-        hal_stack_read_buffer( ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size );
+        hal_stack_read_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
         break;
     case CONTEXT_FUOTA:
         // no fuota example on rpi
@@ -191,10 +191,10 @@ void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_
         // no store and fw example on rpi
         break;
     case CONTEXT_SECURE_ELEMENT:
-        hal_stack_read_buffer( ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size );
+        hal_stack_read_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
         break;
     default:
-        mcu_panic( );
+        mcu_panic();
         break;
     }
 }
@@ -202,7 +202,7 @@ void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_
 void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t offset, const uint8_t *buffer,
                                   const uint32_t size)
 {
-    // Offset is only used for fuota and store and forward purpose and for multistack features. 
+    // Offset is only used for fuota and store and forward purpose and for multistack features.
     // To avoid ram consumption the use of hal_stack_read_modify_write is only done in these cases
     switch (ctx_type)
     {
