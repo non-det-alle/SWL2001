@@ -11,8 +11,8 @@ APPBUILD_ROOT = build
 # Prefix for all binaries names
 APPTARGET_ROOT = app
 
-# Target board (only Dragino_RPi for now)
-BOARD ?= Dragino_RPi
+# Target board (only DRAGINO_RPI for now)
+BOARD ?= DRAGINO_RPI
 
 # Target radio
 TARGET_RADIO ?= nc
