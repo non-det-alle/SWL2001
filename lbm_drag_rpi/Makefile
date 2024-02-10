@@ -27,6 +27,7 @@ help:
 	$(call echo_help, " *                                  - DRAGINO_RPI")
 	$(call echo_help, " * MODEM_APP=xxx                   : choose which modem application to build:(default is PERIODICAL_UPLINK)")
 	$(call echo_help, " *                                  - PERIODICAL_UPLINK")
+	$(call echo_help, " *                                  - PORTING_TESTS")
 	$(call echo_help, " * REGION=xxx                      : choose which region should be compiled (default: all)")
 	$(call echo_help, " *                                  - AS_923")
 	$(call echo_help, " *                                  - AU_915")
