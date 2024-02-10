@@ -40,7 +40,7 @@
 #include "smtc_hal_rtc.h"
 #include "smtc_hal_spi.h"
 #include "smtc_hal_lp_timer.h"
-#include<pigpio.h>
+#include <pigpio.h>
 
 /*
  * -----------------------------------------------------------------------------
@@ -130,6 +130,7 @@ void hal_mcu_reset(void)
 
 void hal_mcu_wait_us(const int32_t microseconds)
 {
+    // non stoppable by signals
     gpioDelay(microseconds);
 }
 
@@ -140,7 +141,10 @@ void hal_mcu_set_sleep_for_ms(const int32_t milliseconds)
         return;
     }
 
-    gpioDelay(milliseconds * 1000);
+    struct timespec delay = {
+        .tv_sec = milliseconds / 1000,
+        .tv_nsec = milliseconds % 1000 * 1000000};
+    clock_nanosleep(RT_CLOCK, 0, &delay, NULL);
 }
 
 /*

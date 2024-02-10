@@ -114,8 +114,7 @@ void hal_gpio_init_in(const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_t
     hal_pigpio_init(pin, PI_CLEAR, pulls[pull_mode], PI_INPUT);
 
     uint8_t mode = modes[irq_mode];
-    if ((mode == RISING_EDGE) || (mode == FALLING_EDGE) ||
-        (mode == EITHER_EDGE))
+    if ((mode == RISING_EDGE) || (mode == FALLING_EDGE) || (mode == EITHER_EDGE))
     {
         hal_gpio_irq_attach(irq);
         gpioSetISRFunc(pin, mode, 0, hal_gpio_irq_callback);
@@ -187,8 +186,8 @@ void hal_gpio_set_value(const hal_gpio_pin_names_t pin, const uint32_t value)
 
 uint32_t hal_gpio_get_value(const hal_gpio_pin_names_t pin)
 {
-    int value = gpioRead(pin);
-    if (value == PI_BAD_GPIO)
+    int value;
+    if ((value = gpioRead(pin)) == PI_BAD_GPIO)
     {
         mcu_panic();
     }

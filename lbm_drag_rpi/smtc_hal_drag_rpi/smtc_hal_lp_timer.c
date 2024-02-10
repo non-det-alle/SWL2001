@@ -143,6 +143,7 @@ void hal_lp_timer_stop(hal_lp_timer_id_t id)
 {
     struct itimerspec its;
     its.it_value = ZERO;
+    its.it_interval = ZERO;
     if (timer_settime(lptim_handle[id], 0, &its, NULL) == -1)
     {
         mcu_panic();
