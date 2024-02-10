@@ -251,6 +251,11 @@ APP_C_SOURCES += \
 	main_examples/main_periodical_uplink.c
 endif
 
+ifeq ($(MODEM_APP),PORTING_TESTS)
+APP_C_SOURCES += \
+	main_examples/main_porting_tests.c
+endif
+
 COMMON_C_INCLUDES += \
 	-Imain_examples
 

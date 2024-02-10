@@ -96,6 +96,8 @@ int main(void)
 #if MAKEFILE_APP == PERIODICAL_UPLINK
             // This example show how to send data on an external event.
             main_periodical_uplink();
+#elif MAKEFILE_APP == PORTING_TESTS
+            main_porting_tests();
 #else
 #error "Unknown application" ## MAKEFILE_APP
 #endif
