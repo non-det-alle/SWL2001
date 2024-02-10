@@ -66,6 +66,7 @@ extern "C" {
  * @brief Application examples
  */
 #define PERIODICAL_UPLINK 0
+#define PORTING_TESTS 2
 
 /*
  * -----------------------------------------------------------------------------
