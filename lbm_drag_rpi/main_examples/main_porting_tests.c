@@ -113,7 +113,8 @@
     } while( 0 );
 
 #if defined( SX127X )
-const ralf_t modem_radio_test = RALF_SX127X_INSTANTIATE( NULL );
+static sx127x_t sx127x;
+const ralf_t modem_radio_test = RALF_SX127X_INSTANTIATE( &sx127x );
 #else
 #error "Please select radio board.."
 #endif
