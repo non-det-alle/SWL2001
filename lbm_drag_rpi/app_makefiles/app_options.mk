@@ -17,7 +17,7 @@ BOARD ?= DRAGINO_RPI
 # Target radio
 TARGET_RADIO ?= nc
 
-# Application (only PERIODICAL_UPLINK for now)
+# Application (only PERIODICAL_UPLINK or PORTING_TESTS for now)
 # Default: PERIODICAL_UPLINK
 MODEM_APP ?= nc
 

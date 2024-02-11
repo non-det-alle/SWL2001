@@ -54,14 +54,9 @@
 #include "smtc_hal_mcu.h"
 #include "smtc_hal_gpio.h"
 
-#if defined( SX128X )
-#include "ralf_sx128x.h"
-#elif defined( SX126X )
-#include "ralf_sx126x.h"
-#include "sx126x.h"
-#elif defined( LR11XX )
-#include "ralf_lr11xx.h"
-#include "lr11xx_system.h"
+#if defined( SX127X )
+#include "ralf_sx127x.h"
+#include "sx127x.h"
 #endif
 
 /*
@@ -77,6 +72,12 @@
 
 #define NB_LOOP_TEST_SPI 2
 #define NB_LOOP_TEST_CONFIG_RADIO 2
+
+#if defined( SX1272 )
+#define SX127X_VERSION 0x22
+#elif defined( SX1276 )
+#define SX127X_VERSION 0x12
+#endif
 
 #define FREQ_NO_RADIO 868300000
 #define SYNC_WORD_NO_RADIO 0x21
@@ -111,12 +112,8 @@
         SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_DEFAULT ); \
     } while( 0 );
 
-#if defined( SX128X )
-const ralf_t modem_radio = RALF_SX128X_INSTANTIATE( NULL );
-#elif defined( SX126X )
-const ralf_t modem_radio = RALF_SX126X_INSTANTIATE( NULL );
-#elif defined( LR11XX )
-const ralf_t modem_radio = RALF_LR11XX_INSTANTIATE( NULL );
+#if defined( SX127X )
+const ralf_t modem_radio_test = RALF_SX127X_INSTANTIATE( NULL );
 #else
 #error "Please select radio board.."
 #endif
@@ -277,6 +274,11 @@ void main_porting_tests( void )
 
     SMTC_HAL_TRACE_MSG( "----------------------------------------\nEND \n\n" );
 
+    while( 1 )
+    {
+        hal_mcu_set_sleep_for_ms( 1000 );
+    }
+
     return;
 }
 
@@ -316,48 +318,28 @@ static bool porting_test_spi( void )
     uint16_t counter_nok = 0;
 
     // Reset radio (prerequisite)
-    ral_reset( &( modem_radio.ral ) );
+    ral_reset( &( modem_radio_test.ral ) );
 
     for( uint16_t i = 0; i < NB_LOOP_TEST_SPI; i++ )
     {
-#if defined( LR11XX )
-        lr11xx_system_version_t version;
-        lr11xx_status_t         status;
+#if defined( SX127X )
+        uint8_t              chip_version;
+        sx127x_status_t      status;
 
-        status = lr11xx_system_get_version( NULL, &version );
+        status = sx127x_read_register( NULL, SX127X_REG_COMMON_VERSION, &chip_version, 1 );
 
-        if( status == LR11XX_STATUS_OK )
+        if( status == SX127X_STATUS_OK )
         {
-            if( version.fw != LR11XX_FW_VERSION )
+            if (chip_version != SX127X_VERSION)
             {
-                PORTING_TEST_MSG_NOK( " Wrong LR11XX firmware version: expected 0x%04X / get 0x%04X \n",
-                                      LR11XX_FW_VERSION, version.fw );
+                PORTING_TEST_MSG_NOK( " Wrong SX127X chip version code: 0x%02X / get 0x%02X \n",
+                                      SX127X_VERSION, chip_version );
                 counter_nok++;
             }
         }
         else
         {
-            PORTING_TEST_MSG_NOK( " Failed to get LR11XX firmware version \n" );
-            counter_nok++;
-        }
-
-#elif defined( SX126X )
-        sx126x_chip_status_t chip_status;
-        sx126x_status_t      status;
-
-        status = sx126x_get_status( NULL, &chip_status );
-
-        if( status == SX126X_STATUS_OK )
-        {
-            if( chip_status.chip_mode == SX126X_CHIP_MODE_UNUSED )
-            {
-                PORTING_TEST_MSG_NOK( " Wrong SX126X chip mode, get SX126X_CHIP_MODE_UNUSED \n" );
-                counter_nok++;
-            }
-        }
-        else
-        {
-            PORTING_TEST_MSG_NOK( " Failed to get SX126X status \n" );
+            PORTING_TEST_MSG_NOK( " Failed to get SX127X version from registers \n" );
             counter_nok++;
         }
 #else
@@ -415,16 +397,16 @@ static bool reset_init_radio( void )
     ral_status_t status = RAL_STATUS_ERROR;
 
     // Reset, init radio and put it in sleep mode
-    ral_reset( &( modem_radio.ral ) );
+    ral_reset( &( modem_radio_test.ral ) );
 
-    status = ral_init( &( modem_radio.ral ) );
+    status = ral_init( &( modem_radio_test.ral ) );
     if( status != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_init() function failed \n" );
         return false;
     }
 
-    status = ral_set_sleep( &( modem_radio.ral ), true );
+    status = ral_set_sleep( &( modem_radio_test.ral ), true );
     smtc_modem_hal_set_ant_switch( false );
     if( status != RAL_STATUS_OK )
     {
@@ -480,12 +462,12 @@ static bool porting_test_radio_irq( void )
 
     smtc_modem_hal_start_radio_tcxo( );
     smtc_modem_hal_set_ant_switch( false );
-    if( ralf_setup_lora( &modem_radio, &rx_lora_param ) != RAL_STATUS_OK )
+    if( ralf_setup_lora( &modem_radio_test, &rx_lora_param ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ralf_setup_lora() function failed \n" );
         return false;
     }
-    if( ral_set_dio_irq_params( &( modem_radio.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
+    if( ral_set_dio_irq_params( &( modem_radio_test.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
                                                           RAL_IRQ_RX_CRC_ERROR ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_set_dio_irq_params() function failed \n" );
@@ -493,7 +475,7 @@ static bool porting_test_radio_irq( void )
     }
 
     // Configure radio in reception mode
-    if( ral_set_rx( &( modem_radio.ral ), rx_timeout_in_ms ) != RAL_STATUS_OK )
+    if( ral_set_rx( &( modem_radio_test.ral ), rx_timeout_in_ms ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_set_rx() function failed \n" );
         return false;
@@ -557,12 +539,12 @@ static return_code_test_t test_get_time_in_s( void )
 
     smtc_modem_hal_start_radio_tcxo( );
     smtc_modem_hal_set_ant_switch( false );
-    if( ralf_setup_lora( &modem_radio, &rx_lora_param ) != RAL_STATUS_OK )
+    if( ralf_setup_lora( &modem_radio_test, &rx_lora_param ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ralf_setup_lora() function failed \n" );
         return RC_PORTING_TEST_NOK;
     }
-    if( ral_set_dio_irq_params( &( modem_radio.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
+    if( ral_set_dio_irq_params( &( modem_radio_test.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
                                                           RAL_IRQ_RX_CRC_ERROR ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_set_dio_irq_params() function failed \n" );
@@ -570,7 +552,7 @@ static return_code_test_t test_get_time_in_s( void )
     }
 
     // Configure radio in reception mode
-    if( ral_set_rx( &( modem_radio.ral ), rx_timeout_in_ms ) != RAL_STATUS_OK )
+    if( ral_set_rx( &( modem_radio_test.ral ), rx_timeout_in_ms ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_set_rx() function failed \n" );
         return RC_PORTING_TEST_NOK;
@@ -654,12 +636,12 @@ static return_code_test_t test_get_time_in_ms( void )
 
     smtc_modem_hal_start_radio_tcxo( );
     smtc_modem_hal_set_ant_switch( false );
-    if( ralf_setup_lora( &modem_radio, &rx_lora_param ) != RAL_STATUS_OK )
+    if( ralf_setup_lora( &modem_radio_test, &rx_lora_param ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ralf_setup_lora() function failed \n" );
         return RC_PORTING_TEST_NOK;
     }
-    if( ral_set_dio_irq_params( &( modem_radio.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
+    if( ral_set_dio_irq_params( &( modem_radio_test.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
                                                           RAL_IRQ_RX_CRC_ERROR ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_set_dio_irq_params() function failed \n" );
@@ -674,7 +656,7 @@ static return_code_test_t test_get_time_in_ms( void )
     }
 
     // Configure radio in reception mode
-    if( ral_set_rx( &( modem_radio.ral ), 0 ) != RAL_STATUS_OK )
+    if( ral_set_rx( &( modem_radio_test.ral ), 0 ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_set_rx() function failed \n" );
         return RC_PORTING_TEST_NOK;
@@ -1058,12 +1040,12 @@ static bool porting_test_config_rx_radio( void )
         // Setup radio and relative irq
         smtc_modem_hal_start_radio_tcxo( );
         smtc_modem_hal_set_ant_switch( false );
-        if( ralf_setup_lora( &modem_radio, &rx_lora_param ) != RAL_STATUS_OK )
+        if( ralf_setup_lora( &modem_radio_test, &rx_lora_param ) != RAL_STATUS_OK )
         {
             PORTING_TEST_MSG_NOK( " ralf_setup_lora() function failed \n" );
             return false;
         }
-        if( ral_set_dio_irq_params( &( modem_radio.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
+        if( ral_set_dio_irq_params( &( modem_radio_test.ral ), RAL_IRQ_RX_DONE | RAL_IRQ_RX_TIMEOUT | RAL_IRQ_RX_HDR_ERROR |
                                                               RAL_IRQ_RX_CRC_ERROR ) != RAL_STATUS_OK )
         {
             PORTING_TEST_MSG_NOK( " ral_set_dio_irq_params() function failed \n" );
@@ -1071,7 +1053,7 @@ static bool porting_test_config_rx_radio( void )
         }
 
         // Configure radio in reception mode
-        // if( ral_set_rx( &( modem_radio.ral ), rx_timeout_in_ms ) !=
+        // if( ral_set_rx( &( modem_radio_test.ral ), rx_timeout_in_ms ) !=
         //     RAL_STATUS_OK )
         // {
         //     PORTING_TEST_MSG_NOK( " ral_set_rx() function failed \n" );
@@ -1144,24 +1126,24 @@ static bool porting_test_config_tx_radio( void )
 
         smtc_modem_hal_start_radio_tcxo( );
         smtc_modem_hal_set_ant_switch( true );
-        if( ralf_setup_lora( &modem_radio, &tx_lora_param ) != RAL_STATUS_OK )
+        if( ralf_setup_lora( &modem_radio_test, &tx_lora_param ) != RAL_STATUS_OK )
         {
             PORTING_TEST_MSG_NOK( " ralf_setup_lora() function failed \n" );
             return false;
         }
-        if( ral_set_dio_irq_params( &( modem_radio.ral ), RAL_IRQ_TX_DONE ) != RAL_STATUS_OK )
+        if( ral_set_dio_irq_params( &( modem_radio_test.ral ), RAL_IRQ_TX_DONE ) != RAL_STATUS_OK )
         {
             PORTING_TEST_MSG_NOK( " ral_set_dio_irq_params() function failed \n" );
             return false;
         }
 
-        if( ral_set_pkt_payload( &( modem_radio.ral ), payload, payload_size ) != RAL_STATUS_OK )
+        if( ral_set_pkt_payload( &( modem_radio_test.ral ), payload, payload_size ) != RAL_STATUS_OK )
         {
             PORTING_TEST_MSG_NOK( " ral_set_pkt_payload() function failed \n" );
             return false;
         }
 
-        // if( ral_set_tx( &( modem_radio.ral ) ) != RAL_STATUS_OK )
+        // if( ral_set_tx( &( modem_radio_test.ral ) ) != RAL_STATUS_OK )
         // {
         //     PORTING_TEST_MSG_NOK( " ral_set_tx() function failed \n" );
         //     return false;
@@ -1470,12 +1452,12 @@ static void radio_tx_irq_callback( void* obj )
 
     radio_irq_raised = true;
 
-    // if( ral_get_irq_status( &( modem_radio.ral ), &radio_irq ) != RAL_STATUS_OK )
+    // if( ral_get_irq_status( &( modem_radio_test.ral ), &radio_irq ) != RAL_STATUS_OK )
     // {
     //     SMTC_HAL_TRACE_MSG_COLOR( "NOK\n ral_get_irq_status() function failed \n", HAL_DBG_TRACE_COLOR_RED );
     // }
     // SMTC_HAL_TRACE_INFO( " RP: IRQ source - 0x%04x\n", radio_irq );
-    if( ral_clear_irq_status( &( modem_radio.ral ), RAL_IRQ_ALL ) != RAL_STATUS_OK )
+    if( ral_clear_irq_status( &( modem_radio_test.ral ), RAL_IRQ_ALL ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_clear_irq_status() function failed \n" );
     }
@@ -1492,7 +1474,7 @@ static void radio_rx_irq_callback( void* obj )
     irq_time_ms         = smtc_modem_hal_get_time_in_ms( );
     radio_irq_raised    = true;
 
-    if( ral_get_irq_status( &( modem_radio.ral ), &radio_irq ) != RAL_STATUS_OK )
+    if( ral_get_irq_status( &( modem_radio_test.ral ), &radio_irq ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( "ral_get_irq_status() function failed \n" );
     }
@@ -1503,7 +1485,7 @@ static void radio_rx_irq_callback( void* obj )
         irq_rx_timeout_raised = true;
     }
 
-    if( ral_clear_irq_status( &( modem_radio.ral ), RAL_IRQ_ALL ) != RAL_STATUS_OK )
+    if( ral_clear_irq_status( &( modem_radio_test.ral ), RAL_IRQ_ALL ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_clear_irq_status() function failed \n" );
     }
@@ -1522,7 +1504,7 @@ static void radio_irq_callback_get_time_in_s( void* obj )
     irq_time_s          = smtc_modem_hal_get_time_in_s( );
     radio_irq_raised    = true;
 
-    if( ral_get_irq_status( &( modem_radio.ral ), &radio_irq ) != RAL_STATUS_OK )
+    if( ral_get_irq_status( &( modem_radio_test.ral ), &radio_irq ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_get_irq_status() function failed \n" );
     }
@@ -1532,7 +1514,7 @@ static void radio_irq_callback_get_time_in_s( void* obj )
         irq_rx_timeout_raised = true;
     }
 
-    if( ral_clear_irq_status( &( modem_radio.ral ), RAL_IRQ_ALL ) != RAL_STATUS_OK )
+    if( ral_clear_irq_status( &( modem_radio_test.ral ), RAL_IRQ_ALL ) != RAL_STATUS_OK )
     {
         PORTING_TEST_MSG_NOK( " ral_clear_irq_status() function failed \n" );
     }
