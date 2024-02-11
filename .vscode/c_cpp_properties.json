@@ -2,11 +2,34 @@
     "configurations": [
         {
             "name": "Linux",
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/aarch64-linux-gnu-gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++14",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-gcc-arm64",
+            "includePath": [
+                "${workspaceFolder}/lbm_drag_rpi/main_examples",
+                "${workspaceFolder}/lbm_drag_rpi",
+                "${workspaceFolder}/lbm_drag_rpi/radio_hal",
+                "${workspaceFolder}/lbm_drag_rpi/smtc_modem_hal",
+                "${workspaceFolder}/lbm_drag_rpi/smtc_hal_drag_rpi",
+                "${workspaceFolder}/lbm_lib/smtc_modem_core/radio_drivers/sx127x_driver/src",
+                "${workspaceFolder}/lbm_lib/smtc_modem_core/smtc_ral/src",
+                "${workspaceFolder}/lbm_lib/smtc_modem_core/smtc_ralf/src",
+                "${workspaceFolder}/lbm_lib/smtc_modem_api",
+                "${workspaceFolder}/lbm_lib/smtc_modem_hal"
+            ],
+            "defines": [
+                "SX127X",
+                "SX1276"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/lbm_drag_rpi",
+                    "${workspaceFolder}/lbm_lib"
+                ]
+            }
         }
     ],
-    "version": 4
+    "version": 4,
+    "enableConfigurationSquiggles": true
 }
