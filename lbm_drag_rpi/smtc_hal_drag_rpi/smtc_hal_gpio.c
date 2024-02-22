@@ -86,8 +86,8 @@ static hal_gpio_irq_t const *gpio_irq[P_NUM];
 /*!
  * GPIO initialize
  */
-void hal_pigpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
-                     const uint32_t pull_mode, const uint32_t io_mode);
+void hal_gpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
+                   const uint32_t pull_mode, const uint32_t io_mode);
 
 /*!
  * GPIO IRQ callback
@@ -111,36 +111,51 @@ void hal_gpio_init_in(const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_t
         irq->pin = pin;
     }
 
-    hal_pigpio_init(pin, PI_CLEAR, pulls[pull_mode], PI_INPUT);
+    hal_gpio_init(pin, PI_CLEAR, pulls[pull_mode], PI_INPUT);
 
-    uint8_t mode = modes[irq_mode];
-    if ((mode == RISING_EDGE) || (mode == FALLING_EDGE) || (mode == EITHER_EDGE))
-    {
-        hal_gpio_irq_attach(irq);
-        gpioSetISRFunc(pin, mode, 0, hal_gpio_irq_callback);
-        gpio_irq_mode[pin - 0x2u] = irq_mode;
-    }
+    gpio_irq_mode[pin - 0x2u] = irq_mode;
+
+    hal_gpio_irq_attach(irq);
 }
 
 void hal_gpio_init_out(const hal_gpio_pin_names_t pin, const uint32_t value)
 {
-    hal_pigpio_init(pin, value, PI_PUD_OFF, PI_OUTPUT);
+    hal_gpio_init(pin, value, PI_PUD_OFF, PI_OUTPUT);
 }
 
 void hal_gpio_irq_attach(const hal_gpio_irq_t *irq)
 {
-    if ((irq != NULL) && (irq->callback != NULL))
+    if ((irq == NULL) || (irq->callback == NULL))
     {
-        gpio_irq[irq->pin - 0x2u] = irq;
+        return;
+    }
+
+    uint8_t irq_mode = gpio_irq_mode[irq->pin - 0x2u];
+    if (irq_mode == BSP_GPIO_IRQ_MODE_OFF)
+    {
+        return;
+    }
+
+    gpio_irq[irq->pin - 0x2u] = irq;
+    if (gpioSetISRFunc(irq->pin, modes[irq_mode], 0, hal_gpio_irq_callback) != 0)
+    {
+        mcu_panic();
     }
 }
 
 void hal_gpio_irq_detach(const hal_gpio_irq_t *irq)
 {
-    if (irq != NULL)
+    if (irq == NULL)
     {
-        gpio_irq[irq->pin - 0x2u] = NULL;
+        return;
     }
+
+    if (gpioSetISRFunc(irq->pin, 0, 0, NULL) != 0)
+    {
+        // no reset to avoid error-looping
+        mcu_panic_trace();
+    }
+    gpio_irq[irq->pin - 0x2u] = NULL;
 }
 
 void hal_gpio_irq_enable(void)
@@ -186,8 +201,8 @@ void hal_gpio_set_value(const hal_gpio_pin_names_t pin, const uint32_t value)
 
 uint32_t hal_gpio_get_value(const hal_gpio_pin_names_t pin)
 {
-    int value;
-    if ((value = gpioRead(pin)) == PI_BAD_GPIO)
+    int value = gpioRead(pin);
+    if (value == PI_BAD_GPIO)
     {
         mcu_panic();
     }
@@ -209,8 +224,8 @@ void hal_gpio_enable_clock(const hal_gpio_pin_names_t pin)
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
 
-void hal_pigpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
-                     const uint32_t pull_mode, const uint32_t io_mode)
+void hal_gpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
+                   const uint32_t pull_mode, const uint32_t io_mode)
 {
     hal_gpio_set_value(pin, value);
     if (gpioSetPullUpDown(pin, pull_mode) != 0)
