@@ -63,21 +63,32 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-static int lptim_signo[HAL_LP_TIMER_NB];
+typedef struct hal_lp_timer_s
+{
+    int signo;
+    timer_t handle;
+    hal_lp_timer_irq_t tmr_irq;
+    bool blocked;
+    bool pending;
+} hal_lp_timer_t;
 
-static timer_t lptim_handle[HAL_LP_TIMER_NB];
-
-static hal_lp_timer_irq_t lptim_tmr_irq[HAL_LP_TIMER_NB] = {
+static hal_lp_timer_t lptim[HAL_LP_TIMER_NB] = {
     {
-        .context = NULL,
-        .callback = NULL,
+        .tmr_irq = {
+            .context = NULL,
+            .callback = NULL,
+        },
+        .blocked = false,
+        .pending = false,
     },
-#if (HAL_LP_TIMER_NB > 1)
     {
-        .context = NULL,
-        .callback = NULL,
+        .tmr_irq = {
+            .context = NULL,
+            .callback = NULL,
+        },
+        .blocked = false,
+        .pending = false,
     },
-#endif
 };
 
 /*
@@ -100,24 +111,40 @@ void hal_lp_timer_init(hal_lp_timer_id_t id)
     {
         mcu_panic();
     }
-    lptim_signo[id] = signo;
+    lptim[id].signo = signo;
+
+    struct sigaction sa; // establish handler for callback
+    sa.sa_sigaction = hal_pl_timer_handler;
+    sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
+    sa.sa_flags = SA_SIGINFO;
+    if (sigaction(signo, &sa, NULL) == -1)
+    {
+        mcu_panic();
+    }
 
     struct sigevent sev;
     sev.sigev_notify = SIGEV_SIGNAL;
     sev.sigev_signo = signo;
     sev.sigev_value.sival_int = id; // pass id here
-    if (timer_create(RT_CLOCK, &sev, &lptim_handle[id]) == -1)
+    if (timer_create(RT_CLOCK, &sev, &lptim[id].handle) == -1)
     {
         mcu_panic();
     }
-
-    hal_lp_timer_irq_enable(id); // establish handler for callback
-    lptim_tmr_irq[id] = (hal_lp_timer_irq_t){.context = NULL, .callback = NULL};
 }
 
 void hal_lp_timer_de_init(hal_lp_timer_id_t id)
 {
-    if (timer_delete(lptim_handle[id]) == -1)
+    if (timer_delete(lptim[id].handle) == -1)
+    {
+        // no reset to avoid error-looping
+        mcu_panic_trace();
+    }
+
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    if (sigaction(lptim[id].signo, &sa, NULL) == -1)
     {
         // no reset to avoid error-looping
         mcu_panic_trace();
@@ -126,56 +153,45 @@ void hal_lp_timer_de_init(hal_lp_timer_id_t id)
 
 void hal_lp_timer_start(hal_lp_timer_id_t id, const uint32_t milliseconds, const hal_lp_timer_irq_t *tmr_irq)
 {
+    lptim[id].tmr_irq = *tmr_irq; // callback assignment
+
     struct itimerspec its;
     its.it_value.tv_sec = milliseconds / 1000;
     its.it_value.tv_nsec = milliseconds % 1000 * 1000000;
     its.it_interval = ZERO;
-    if (timer_settime(lptim_handle[id], 0, &its, NULL) == -1)
+    if (timer_settime(lptim[id].handle, 0, &its, NULL) == -1)
     {
         mcu_panic();
     }
-
-    lptim_tmr_irq[id] = *tmr_irq; // callback assignment
 }
 
 void hal_lp_timer_stop(hal_lp_timer_id_t id)
 {
+    lptim[id].tmr_irq = (hal_lp_timer_irq_t){.context = NULL, .callback = NULL};
+
     struct itimerspec its;
     its.it_value = ZERO;
     its.it_interval = ZERO;
-    if (timer_settime(lptim_handle[id], 0, &its, NULL) == -1)
+    if (timer_settime(lptim[id].handle, 0, &its, NULL) == -1)
     {
         mcu_panic();
     }
-
-    lptim_tmr_irq[id] = (hal_lp_timer_irq_t){.context = NULL, .callback = NULL};
 }
 
 void hal_lp_timer_irq_enable(hal_lp_timer_id_t id)
 {
-    /* Implemented by changing sigaction to execute handler */
-    struct sigaction sa;
-    sa.sa_sigaction = hal_pl_timer_handler;
-    sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
-    sa.sa_flags = SA_SIGINFO; // | SA_RESTART;
-    if (sigaction(lptim_signo[id], &sa, NULL) == -1)
+    lptim[id].blocked = false;
+
+    if (lptim[id].pending && lptim[id].tmr_irq.callback != NULL)
     {
-        mcu_panic();
+        lptim[id].tmr_irq.callback(lptim[id].tmr_irq.context);
+        lptim[id].pending = false;
     }
 }
 
 void hal_lp_timer_irq_disable(hal_lp_timer_id_t id)
 {
-    /* Implemented by changing sigaction to ignore */
-    struct sigaction sa;
-    sa.sa_handler = SIG_IGN;
-    sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
-    sa.sa_flags = 0;
-    if (sigaction(lptim_signo[id], &sa, NULL) == -1)
-    {
-        // no reset to avoid error-looping
-        mcu_panic();
-    }
+    lptim[id].blocked = true;
 }
 
 /*
@@ -186,9 +202,16 @@ void hal_lp_timer_irq_disable(hal_lp_timer_id_t id)
 void hal_pl_timer_handler(int sig, siginfo_t *si, void *uc)
 {
     int id = si->si_value.sival_int;
-    if (lptim_tmr_irq[id].callback != NULL)
+
+    if (lptim[id].blocked)
     {
-        lptim_tmr_irq[id].callback(lptim_tmr_irq[id].context);
+        lptim[id].pending = true;
+        return;
+    }
+
+    if (lptim[id].tmr_irq.callback != NULL)
+    {
+        lptim[id].tmr_irq.callback(lptim[id].tmr_irq.context);
     }
 }
 
