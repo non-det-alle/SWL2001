@@ -67,9 +67,6 @@
 // !! SHOULD BE DEFINED BY USER !!
 #define ENABLE_TEST_FLASH 0  // Enable flash porting test BUT disable other porting tests
 
-// Delay introduced by HAL_LPTIM_TimeOut_Start_IT function of stm32l4xx_hal_lptim.c file
-#define COMPENSATION_IN_MS_STM32L4 4
-
 #define NB_LOOP_TEST_SPI 2
 #define NB_LOOP_TEST_CONFIG_RADIO 2
 
@@ -762,8 +759,7 @@ static bool porting_test_timer_irq( void )
         // Do nothing
     }
 
-    smtc_modem_hal_start_timer( timer_ms, timer_irq_callback,
-                                NULL );  // Warning this function takes ~3,69 ms for STM32L4
+    smtc_modem_hal_start_timer( timer_ms, timer_irq_callback, NULL );
 
     // Timeout if irq not raised
     while( ( timer_irq_raised == false ) &&
@@ -778,7 +774,7 @@ static bool porting_test_timer_irq( void )
         return false;
     }
 
-    uint32_t time = irq_time_ms - start_time_ms - COMPENSATION_IN_MS_STM32L4;
+    uint32_t time = irq_time_ms - start_time_ms;
 
     if( ( time >= timer_ms ) && ( time <= timer_ms + MARGIN_TIMER_IRQ_IN_MS ) )
     {
@@ -1282,9 +1278,7 @@ static bool porting_test_timer_irq_low_power( void )
         return false;
     }
 
-    uint32_t time =
-        irq_time_ms - start_time_ms - COMPENSATION_IN_MS_STM32L4;  // TODO Warning to compensate delay introduced by
-                                                                   // smtc_modem_hal_start_timer for STM32L4
+    uint32_t time = irq_time_ms - start_time_ms;
     if( ( time >= timer_ms ) && ( time <= timer_ms + MARGIN_TIMER_IRQ_IN_MS ) )
     {
         PORTING_TEST_MSG_OK( );
