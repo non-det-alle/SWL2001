@@ -58,11 +58,6 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
-/*
- * -----------------------------------------------------------------------------
- * --- PRIVATE VARIABLES -------------------------------------------------------
- */
-
 typedef struct hal_lp_timer_s
 {
     int signo;
@@ -72,24 +67,12 @@ typedef struct hal_lp_timer_s
     bool pending;
 } hal_lp_timer_t;
 
-static hal_lp_timer_t lptim[HAL_LP_TIMER_NB] = {
-    {
-        .tmr_irq = {
-            .context = NULL,
-            .callback = NULL,
-        },
-        .blocked = false,
-        .pending = false,
-    },
-    {
-        .tmr_irq = {
-            .context = NULL,
-            .callback = NULL,
-        },
-        .blocked = false,
-        .pending = false,
-    },
-};
+/*
+ * -----------------------------------------------------------------------------
+ * --- PRIVATE VARIABLES -------------------------------------------------------
+ */
+
+static hal_lp_timer_t lptim[HAL_LP_TIMER_NB];
 
 /*
  * -----------------------------------------------------------------------------
@@ -182,7 +165,7 @@ void hal_lp_timer_irq_enable(hal_lp_timer_id_t id)
 {
     lptim[id].blocked = false;
 
-    if (lptim[id].pending && lptim[id].tmr_irq.callback != NULL)
+    if (lptim[id].pending && (lptim[id].tmr_irq.callback != NULL))
     {
         lptim[id].tmr_irq.callback(lptim[id].tmr_irq.context);
         lptim[id].pending = false;

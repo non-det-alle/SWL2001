@@ -125,7 +125,7 @@ void hal_mcu_reset(void)
     hal_spi_de_init(RADIO_SPI_ID);
 
     // Clears all set GPIO interrupts
-    hal_gpio_irq_disable();
+    hal_gpio_irq_de_init();
 
     // Terminate GPIO control
     gpioTerminate();

@@ -55,6 +55,14 @@
  * --- PRIVATE TYPES -----------------------------------------------------------
  */
 
+typedef struct hal_gpio_s
+{
+    const hal_gpio_irq_t *irq;
+    hal_gpio_irq_mode_t irq_mode;
+    bool blocked;
+    bool pending;
+} hal_gpio_t;
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
@@ -67,16 +75,11 @@ static const uint8_t modes[] = {OFF, RISING_EDGE, FALLING_EDGE, EITHER_EDGE};
 static const uint8_t pulls[] = {PI_PUD_OFF, PI_PUD_UP, PI_PUD_DOWN};
 
 /*!
- * Array holding IRQ modes for set gpio pins
+ * Array holding attached gpio context
  *
  * Note: global and static arrays are automatically initialized to 0
  */
-static hal_gpio_irq_mode_t gpio_irq_mode[P_NUM];
-
-/*!
- * Array holding attached IRQ gpio data context
- */
-static hal_gpio_irq_t const *gpio_irq[P_NUM];
+static hal_gpio_t gpio[P_NUM];
 
 /*
  * -----------------------------------------------------------------------------
@@ -113,7 +116,7 @@ void hal_gpio_init_in(const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_t
 
     hal_gpio_init(pin, PI_CLEAR, pulls[pull_mode], PI_INPUT);
 
-    gpio_irq_mode[pin - 0x2u] = irq_mode;
+    gpio[pin - 0x2u].irq_mode = irq_mode;
 
     hal_gpio_irq_attach(irq);
 }
@@ -123,6 +126,21 @@ void hal_gpio_init_out(const hal_gpio_pin_names_t pin, const uint32_t value)
     hal_gpio_init(pin, value, PI_PUD_OFF, PI_OUTPUT);
 }
 
+void hal_gpio_irq_de_init(void)
+{
+    for (size_t i = 0; i < P_NUM; i++)
+    {
+        if (gpio[i].irq != NULL)
+        {
+            if (gpioSetISRFunc(gpio[i].irq->pin, 0, 0, NULL) != 0)
+            {
+                // no reset to avoid error-looping
+                mcu_panic_trace();
+            }
+        }
+    }
+}
+
 void hal_gpio_irq_attach(const hal_gpio_irq_t *irq)
 {
     if ((irq == NULL) || (irq->callback == NULL))
@@ -130,13 +148,13 @@ void hal_gpio_irq_attach(const hal_gpio_irq_t *irq)
         return;
     }
 
-    uint8_t irq_mode = gpio_irq_mode[irq->pin - 0x2u];
+    uint8_t irq_mode = gpio[irq->pin - 0x2u].irq_mode;
     if (irq_mode == BSP_GPIO_IRQ_MODE_OFF)
     {
         return;
     }
 
-    gpio_irq[irq->pin - 0x2u] = irq;
+    gpio[irq->pin - 0x2u].irq = irq;
     if (gpioSetISRFunc(irq->pin, modes[irq_mode], 0, hal_gpio_irq_callback) != 0)
     {
         mcu_panic();
@@ -152,22 +170,20 @@ void hal_gpio_irq_detach(const hal_gpio_irq_t *irq)
 
     if (gpioSetISRFunc(irq->pin, 0, 0, NULL) != 0)
     {
-        // no reset to avoid error-looping
-        mcu_panic_trace();
+        mcu_panic();
     }
-    gpio_irq[irq->pin - 0x2u] = NULL;
+    gpio[irq->pin - 0x2u].irq = NULL;
 }
 
 void hal_gpio_irq_enable(void)
 {
     for (size_t i = 0; i < P_NUM; i++)
     {
-        if (gpio_irq[i] != NULL && gpio_irq_mode[i] != BSP_GPIO_IRQ_MODE_OFF)
+        gpio[i].blocked = false;
+        if (gpio[i].pending && (gpio[i].irq != NULL) && (gpio[i].irq->callback != NULL))
         {
-            if (gpioSetISRFunc(gpio_irq[i]->pin, modes[gpio_irq_mode[i]], 0, hal_gpio_irq_callback) != 0)
-            {
-                mcu_panic();
-            }
+            gpio[i].irq->callback(gpio[i].irq->context);
+            gpio[i].pending = false;
         }
     }
 }
@@ -176,14 +192,7 @@ void hal_gpio_irq_disable(void)
 {
     for (size_t i = 0; i < P_NUM; i++)
     {
-        if (gpio_irq[i] != NULL)
-        {
-            if (gpioSetISRFunc(gpio_irq[i]->pin, 0, 0, NULL) != 0)
-            {
-                // no reset to avoid error-looping
-                mcu_panic_trace();
-            }
-        }
+        gpio[i].blocked = true;
     }
 }
 
@@ -211,7 +220,10 @@ uint32_t hal_gpio_get_value(const hal_gpio_pin_names_t pin)
 
 void hal_gpio_clear_pending_irq(const hal_gpio_pin_names_t pin)
 {
-    // IRQ cannot pend
+    for (size_t i = 0; i < P_NUM; i++)
+    {
+        gpio[i].pending = false;
+    }
 }
 
 void hal_gpio_enable_clock(const hal_gpio_pin_names_t pin)
@@ -238,12 +250,19 @@ void hal_gpio_init(const hal_gpio_pin_names_t pin, const uint32_t value,
     }
 }
 
-void hal_gpio_irq_callback(int gpio, int level, uint32_t tick)
+void hal_gpio_irq_callback(int pin, int level, uint32_t tick)
 {
-    uint8_t callback_index = gpio - 0x2u;
-    if ((gpio_irq[callback_index] != NULL) && (gpio_irq[callback_index]->callback != NULL))
+    uint8_t index = pin - 0x2u;
+
+    if (gpio[index].blocked)
     {
-        gpio_irq[callback_index]->callback(gpio_irq[callback_index]->context);
+        gpio[index].pending = true;
+        return;
+    }
+
+    if ((gpio[index].irq != NULL) && (gpio[index].irq->callback != NULL))
+    {
+        gpio[index].irq->callback(gpio[index].irq->context);
     }
 }
 
