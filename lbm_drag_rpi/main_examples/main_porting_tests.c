@@ -263,7 +263,7 @@ void main_porting_tests( void )
 
     ret = porting_test_flash( );
     if( ret == false )
-        return ret;
+        return;
 
     SMTC_HAL_TRACE_MSG_COLOR( "\n MCU RESET => relaunch tests and check if read after reset = write before reset \n\n",
                               HAL_DBG_TRACE_COLOR_BLUE );

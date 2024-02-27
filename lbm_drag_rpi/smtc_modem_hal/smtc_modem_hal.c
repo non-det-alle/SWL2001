@@ -340,11 +340,7 @@ uint8_t smtc_modem_hal_get_battery_level(void)
 
 int8_t smtc_modem_hal_get_board_delay_ms(void)
 {
-#if defined(LR1121)
-    return 2;
-#else
-    return 1;
-#endif // LR1121
+    return 0;
 }
 
 /* ------------ Trace management ------------*/
