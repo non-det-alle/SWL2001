@@ -123,6 +123,12 @@ void hal_gpio_init_out( const hal_gpio_pin_names_t pin, const uint32_t value );
 void hal_gpio_init_in( const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_t pull_mode,
                        const hal_gpio_irq_mode_t irq_mode, hal_gpio_irq_t* irq );
 
+
+/*!
+ * Detaches all GPIO MCU interrupts
+ */
+void hal_gpio_irq_de_init( void );
+
 /*!
  * Attaches given callback to the MCU IRQ handler
  *
@@ -131,7 +137,7 @@ void hal_gpio_init_in( const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_
 void hal_gpio_irq_attach( const hal_gpio_irq_t* irq );
 
 /*!
- * Detattaches callback from the MCU IRQ handler
+ * Detaches callback from the MCU IRQ handler
  *
  * \param [in] irq     Pointer to IRQ data context
  */
