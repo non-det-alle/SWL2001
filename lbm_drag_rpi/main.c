@@ -103,7 +103,7 @@ int main(void)
 #endif
         }
         waitpid(cpid, &wstatus, 0);
-    } while (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == -1);
+    } while (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 3);
 }
 
 /*
