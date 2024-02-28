@@ -130,7 +130,7 @@ void hal_mcu_reset(void)
     // Terminate GPIO control
     gpioTerminate();
 
-    exit(-1);
+    exit(3);
 }
 
 void hal_mcu_wait_us(const int32_t microseconds)
