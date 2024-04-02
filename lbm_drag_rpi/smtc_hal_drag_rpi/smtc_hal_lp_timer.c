@@ -53,8 +53,6 @@
 
 #define HAL_LP_TIMER_NB 2 //!< Number of supported low power timers
 
-#define ZERO ((struct timespec){.tv_sec = 0, .tv_nsec = 0})
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE TYPES -----------------------------------------------------------
@@ -96,7 +94,8 @@ void hal_pl_timer_handler(int sig, siginfo_t *si, void *uc);
 
 void hal_lp_timer_init(hal_lp_timer_id_t id)
 {
-    int signo = SIGRTMIN + id;
+    // + 1 is for rtc wakeup timer
+    int signo = SIGRTMIN + id + 1;
     if (signo > SIGRTMAX)
     {
         mcu_panic();

@@ -52,6 +52,8 @@ extern "C" {
 
 #define RT_CLOCK CLOCK_MONOTONIC
 
+#define ZERO ((struct timespec){.tv_sec = 0, .tv_nsec = 0})
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC CONSTANTS --------------------------------------------------------
@@ -71,6 +73,11 @@ extern "C" {
  *  Initializes the MCU RTC peripheral
  */
 void hal_rtc_init( void );
+
+/*!
+ *  De-initializes the MCU RTC peripheral
+ */
+void hal_rtc_de_init(void);
 
 /*!
  * Returns the current RTC time in seconds

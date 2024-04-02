@@ -374,7 +374,8 @@ uint16_t smtc_modem_hal_get_voltage_mv(void)
 
 void smtc_modem_hal_user_lbm_irq(void)
 {
-    // Do nothing in case implementation is bare metal
+    // Wake up thread
+    hal_mcu_wakeup();
 }
 /*
  * -----------------------------------------------------------------------------
