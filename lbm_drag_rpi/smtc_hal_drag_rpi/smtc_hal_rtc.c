@@ -60,7 +60,6 @@
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
-
 static struct timespec hal_rtc_starttime;
 
 static timer_t hal_rtc_tid;
@@ -116,13 +115,6 @@ uint32_t hal_rtc_get_time_s(void)
     return now.tv_sec - hal_rtc_starttime.tv_sec - (now.tv_nsec < hal_rtc_starttime.tv_nsec);
 }
 
-uint32_t hal_rtc_get_time_100us(void)
-{
-    struct timespec now;
-    clock_gettime(RT_CLOCK, &now);
-
-    return (now.tv_sec - hal_rtc_starttime.tv_sec) * 1e4 + (now.tv_nsec - hal_rtc_starttime.tv_nsec) / 1e5 + .5;
-}
 uint32_t hal_rtc_get_time_ms(void)
 {
     struct timespec now;

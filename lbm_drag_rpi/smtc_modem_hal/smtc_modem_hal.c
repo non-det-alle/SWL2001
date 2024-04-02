@@ -132,9 +132,8 @@ uint32_t smtc_modem_hal_get_time_in_ms(void)
     return hal_rtc_get_time_ms();
 }
 
-uint32_t smtc_modem_hal_get_time_in_100us(void)
+void smtc_modem_hal_set_offset_to_test_wrapping( const uint32_t offset_to_test_wrapping )
 {
-    return hal_rtc_get_time_100us();
 }
 
 /* ------------ Timer management ------------*/
