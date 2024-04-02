@@ -93,10 +93,6 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-static uint8_t crashlog_buff_noinit[CRASH_LOG_SIZE];
-static volatile uint8_t crashlog_length_noinit;
-static volatile bool crashlog_available_noinit;
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
@@ -130,10 +126,6 @@ uint32_t smtc_modem_hal_get_time_in_s(void)
 uint32_t smtc_modem_hal_get_time_in_ms(void)
 {
     return hal_rtc_get_time_ms();
-}
-
-void smtc_modem_hal_set_offset_to_test_wrapping( const uint32_t offset_to_test_wrapping )
-{
 }
 
 /* ------------ Timer management ------------*/
@@ -229,39 +221,11 @@ void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t 
     }
 }
 
-void smtc_modem_hal_context_flash_pages_erase(const modem_context_type_t ctx_type, uint32_t offset, uint8_t nb_page)
-{
-    switch (ctx_type)
-    {
-    default:
-        mcu_panic();
-        break;
-    };
-}
-
 /* ------------ crashlog management ------------*/
-
-void smtc_modem_hal_crashlog_store(const uint8_t *crash_string, uint8_t crash_string_length)
-{
-    crashlog_length_noinit = MIN(crash_string_length, CRASH_LOG_SIZE);
-    memcpy(crashlog_buff_noinit, crash_string, crashlog_length_noinit);
-    crashlog_available_noinit = true;
-}
-
-void smtc_modem_hal_crashlog_restore(uint8_t *crash_string, uint8_t *crash_string_length)
-{
-    *crash_string_length = (crashlog_length_noinit > CRASH_LOG_SIZE) ? CRASH_LOG_SIZE : crashlog_length_noinit;
-    memcpy(crash_string, crashlog_buff_noinit, *crash_string_length);
-}
-
-void smtc_modem_hal_crashlog_set_status(bool available)
-{
-    crashlog_available_noinit = available;
-}
 
 bool smtc_modem_hal_crashlog_get_status(void)
 {
-    return crashlog_available_noinit;
+    return false;
 }
 
 /* ------------ assert management ------------*/
@@ -276,7 +240,7 @@ void smtc_modem_hal_on_panic(uint8_t *func, uint32_t line, const char *fmt, ...)
     out_len += vsprintf((char *)&out_buff[out_len], fmt, args);
     va_end(args);
 
-    smtc_modem_hal_crashlog_store(out_buff, out_len);
+    //smtc_modem_hal_crashlog_store(out_buff, out_len);
 
     SMTC_HAL_TRACE_ERROR("Modem panic: %s\n", out_buff);
     smtc_modem_hal_reset_mcu();
