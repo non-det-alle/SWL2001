@@ -62,6 +62,8 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
+bool sleeping = false;
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
@@ -112,6 +114,9 @@ void hal_mcu_reset(void)
 {
     // Cleanup for restart
 
+    // De-initialize RTC
+    hal_rtc_de_init();
+
     // De-initialize Low Power Timers
     hal_lp_timer_de_init(HAL_LP_TIMER_ID_1);
     hal_lp_timer_de_init(HAL_LP_TIMER_ID_2);
@@ -141,10 +146,20 @@ void hal_mcu_set_sleep_for_ms(const int32_t milliseconds)
         return;
     }
 
-    struct timespec delay = {
-        .tv_sec = milliseconds / 1000,
-        .tv_nsec = milliseconds % 1000 * 1000000};
-    clock_nanosleep(RT_CLOCK, 0, &delay, NULL);
+    hal_rtc_wakeup_timer_set_ms( milliseconds );
+    sleeping = true;
+    while (sleeping)
+    {
+        // Check every 500 us, no need to be more accurate
+        gpioDelay(500);
+    }
+    // stop timer after sleep process
+    hal_rtc_wakeup_timer_stop( );
+}
+
+void hal_mcu_wakeup(void)
+{
+    sleeping = false;
 }
 
 /*
