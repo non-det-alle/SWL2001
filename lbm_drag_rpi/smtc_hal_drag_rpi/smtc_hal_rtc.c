@@ -32,7 +32,10 @@
  */
 
 #include <time.h>
+#include <signal.h>
 #include "smtc_hal_rtc.h"
+
+#include "smtc_hal_mcu.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -60,10 +63,14 @@
 
 static struct timespec hal_rtc_starttime;
 
+static timer_t hal_rtc_tid;
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
  */
+
+void hal_rtc_wakeup_timer_handler(int sig, siginfo_t *si, void *uc);
 
 /*
  * -----------------------------------------------------------------------------
@@ -73,6 +80,32 @@ static struct timespec hal_rtc_starttime;
 void hal_rtc_init(void)
 {
     clock_gettime(RT_CLOCK, &hal_rtc_starttime);
+
+    struct sigevent sev;
+    sev.sigev_notify = SIGEV_SIGNAL;
+    sev.sigev_signo = SIGRTMIN;
+    if (timer_create(RT_CLOCK, &sev, &hal_rtc_tid) == -1)
+    {
+        mcu_panic();
+    }
+
+    struct sigaction sa;
+    sa.sa_sigaction = hal_rtc_wakeup_timer_handler;
+    sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
+    sa.sa_flags = SA_SIGINFO; // | SA_RESTART;
+    if (sigaction(SIGRTMIN, &sa, NULL) == -1)
+    {
+        mcu_panic();
+    }
+}
+
+void hal_rtc_de_init(void)
+{
+    if (timer_delete(hal_rtc_tid) == -1)
+    {
+        // no reset to avoid error-looping
+        mcu_panic_trace();
+    }
 }
 
 uint32_t hal_rtc_get_time_s(void)
@@ -98,9 +131,37 @@ uint32_t hal_rtc_get_time_ms(void)
     return (now.tv_sec - hal_rtc_starttime.tv_sec) * 1e3 + (now.tv_nsec - hal_rtc_starttime.tv_nsec) / 1e6 + .5;
 }
 
+void hal_rtc_wakeup_timer_set_ms(const int32_t milliseconds)
+{
+    struct itimerspec its;
+    its.it_value.tv_sec = milliseconds / 1000;
+    its.it_value.tv_nsec = milliseconds % 1000 * 1000000;
+    its.it_interval = ZERO;
+    if (timer_settime(hal_rtc_tid, 0, &its, NULL) == -1)
+    {
+        mcu_panic();
+    }
+}
+
+void hal_rtc_wakeup_timer_stop(void)
+{
+    struct itimerspec its;
+    its.it_value = ZERO;
+    its.it_interval = ZERO;
+    if (timer_settime(hal_rtc_tid, 0, &its, NULL) == -1)
+    {
+        mcu_panic();
+    }
+}
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
+
+void hal_rtc_wakeup_timer_handler(int sig, siginfo_t *si, void *uc)
+{
+    hal_mcu_wakeup();
+}
 
 /* --- EOF ------------------------------------------------------------------ */

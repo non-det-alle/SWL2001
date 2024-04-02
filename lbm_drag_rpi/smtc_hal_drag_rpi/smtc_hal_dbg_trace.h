@@ -120,6 +120,13 @@ extern "C" {
         SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_DEFAULT );                       \
     } while ( 0 );
 
+    #define SMTC_HAL_TRACE_DEBUG( ... )                                             \
+    do                                                                              \
+    {                                                                               \
+        SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_MAGENTA "DEBUG: " __VA_ARGS__);  \
+        SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_DEFAULT );                       \
+    } while ( 0 );
+
     #define SMTC_HAL_TRACE_WARNING( ... )                                           \
     do                                                                              \
     {                                                                               \

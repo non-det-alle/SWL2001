@@ -145,6 +145,11 @@ void hal_mcu_wait_us( const int32_t microseconds );
 void hal_mcu_set_sleep_for_ms( const int32_t milliseconds );
 
 /*!
+ * Wake up the MCU from sleep mode.
+ */
+void hal_mcu_wakeup( void );
+
+/*!
  * Suspend low power process and avoid looping on it
  */
 void hal_mcu_disable_low_power_wait( void );
