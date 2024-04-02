@@ -113,16 +113,6 @@ void hal_mcu_critical_section_begin( uint32_t* mask );
 void hal_mcu_critical_section_end( uint32_t* mask );
 
 /*!
- * Disable all irq at mcu side
- */
-void hal_mcu_disable_irq( void );
-
-/*!
- * Enable all irq at mcu side
- */
-void hal_mcu_enable_irq( void );
-
-/*!
  * Initializes BSP used MCU
  */
 void hal_mcu_init( void );
@@ -148,16 +138,6 @@ void hal_mcu_set_sleep_for_ms( const int32_t milliseconds );
  * Wake up the MCU from sleep mode.
  */
 void hal_mcu_wakeup( void );
-
-/*!
- * Suspend low power process and avoid looping on it
- */
-void hal_mcu_disable_low_power_wait( void );
-
-/*!
- * Enable low power process
- */
-void hal_mcu_enable_low_power_wait( void );
 
 #ifdef __cplusplus
 }

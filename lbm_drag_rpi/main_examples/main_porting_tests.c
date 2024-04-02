@@ -212,14 +212,8 @@ void main_porting_tests( void )
 {
     bool ret = true;
 
-    // Disable IRQ to avoid unwanted behaviour during init
-    hal_mcu_disable_irq( );
-
     // Configure all the µC periph (clock, gpio, timer, ...)
     hal_mcu_init( );
-
-    // Re-enable IRQ
-    hal_mcu_enable_irq( );
 
 #if defined( SX127X )
     // Get modem radio context

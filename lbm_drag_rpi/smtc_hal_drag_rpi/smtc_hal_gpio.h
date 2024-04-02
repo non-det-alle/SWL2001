@@ -177,13 +177,6 @@ uint32_t hal_gpio_get_value( const hal_gpio_pin_names_t pin );
  */
 void hal_gpio_clear_pending_irq( const hal_gpio_pin_names_t pin );
 
-/**
- * @brief Enable gpio clock according to gpio pin
- *
- * @param [in] pin gpio pin
- */
-void hal_gpio_enable_clock( const hal_gpio_pin_names_t pin );
-
 #ifdef __cplusplus
 }
 #endif

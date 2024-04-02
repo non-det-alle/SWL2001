@@ -202,18 +202,12 @@ void main_periodical_uplink(void)
 {
     uint32_t sleep_time_ms = 0;
 
-    // Disable IRQ to avoid unwanted behavior during init
-    hal_mcu_disable_irq();
-
     // Configure all the µC periph (clock, gpio, timer, ...)
     hal_mcu_init();
 
     // Init the modem and use modem_event_callback as event callback, please note that the callback will be
     // called immediately after the first call to smtc_modem_run_engine because of the reset detection
     smtc_modem_init(&modem_event_callback);
-
-    // Init done: enable interruption
-    hal_mcu_enable_irq();
 
     SMTC_HAL_TRACE_INFO("Periodical uplink example is starting \n");
 
@@ -222,13 +216,11 @@ void main_periodical_uplink(void)
         // Modem process launch
         sleep_time_ms = smtc_modem_run_engine();
 
-        // Atomically check sleep conditions (button was not pressed and no modem flags pending)
-        hal_mcu_disable_irq();
+        // Atomically check sleep conditions (no modem flags pending)
         if (smtc_modem_is_irq_flag_pending() == false)
         {
             hal_mcu_set_sleep_for_ms(MIN(sleep_time_ms, WATCHDOG_RELOAD_PERIOD_MS));
         }
-        hal_mcu_enable_irq();
     }
 }
 

@@ -78,19 +78,10 @@ static void mcu_gpio_init(void);
 
 void hal_mcu_critical_section_begin(uint32_t *mask)
 {
-    // not sure we can do anything meaningful here
+    // nothing meaningful to be done here
 }
 
 void hal_mcu_critical_section_end(uint32_t *mask)
-{
-}
-
-void hal_mcu_disable_irq(void)
-{
-    // not sure we can do anything meaningful here
-}
-
-void hal_mcu_enable_irq(void)
 {
 }
 
@@ -151,7 +142,7 @@ void hal_mcu_set_sleep_for_ms(const int32_t milliseconds)
     while (sleeping)
     {
         // Check every 500 us, no need to be more accurate
-        gpioDelay(500);
+        hal_mcu_wait_us(500);
     }
     // stop timer after sleep process
     hal_rtc_wakeup_timer_stop( );

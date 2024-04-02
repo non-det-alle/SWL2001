@@ -226,11 +226,6 @@ void hal_gpio_clear_pending_irq(const hal_gpio_pin_names_t pin)
     }
 }
 
-void hal_gpio_enable_clock(const hal_gpio_pin_names_t pin)
-{
-    // supposedly already enabled by pigpio
-}
-
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
