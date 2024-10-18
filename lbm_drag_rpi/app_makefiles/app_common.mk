@@ -223,7 +223,7 @@ CFLAGS += -std=c17
 # libraries
 LIBS += -lm -lc -lpigpio
 
-LIBDIR = -L/usr/aarch64-linux-gnu/lib
+LIBDIR = -L/usr/aarch64-linux-gnu/usr/local/lib
 
 LDFLAGS += $(MCU_FLAGS)
 #LDFLAGS += --specs=nano.specs
