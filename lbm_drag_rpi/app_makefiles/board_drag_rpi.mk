@@ -31,4 +31,4 @@ BOARD_C_INCLUDES =  \
 	-I.\
 	-Ismtc_modem_hal\
 	-Ismtc_hal_drag_rpi\
-	-I/usr/aarch64-linux-gnu/include
+	-I/usr/aarch64-linux-gnu/usr/local/include
