@@ -75,6 +75,9 @@ DEBUG_LBM_OPT ?= -O0
 # Makefile Configuration options
 #-----------------------------------------------------------------------------
 
+# Compile for debugging
+DEBUG ?= no
+
 # Use multithreaded build (make -j)
 MULTITHREAD ?= yes
 
