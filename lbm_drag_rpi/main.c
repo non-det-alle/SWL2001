@@ -68,7 +68,7 @@
  * See @ref modem_application_t
  */
 #ifndef MAKEFILE_APP
-#warning "Using default application PERIODICAL_UPLINK"
+#pragma GCC warning "Using default application PERIODICAL_UPLINK"
 #define MAKEFILE_APP PERIODICAL_UPLINK
 #endif
 

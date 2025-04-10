@@ -74,6 +74,7 @@ extern "C" {
  */
 
 void main_periodical_uplink( void );
+void main_porting_tests( void );
 
 #ifdef __cplusplus
 }
