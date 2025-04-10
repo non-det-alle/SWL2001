@@ -85,7 +85,7 @@
 /*!
  * Fork-loop to restart on mcu_panic
  */
-int main(void)
+int main( void )
 {
     pid_t cpid;
     int wstatus = 0;
@@ -95,9 +95,9 @@ int main(void)
         {
 #if MAKEFILE_APP == PERIODICAL_UPLINK
             // This example show how to send data on an external event.
-            main_periodical_uplink();
+            main_periodical_uplink( );
 #elif MAKEFILE_APP == PORTING_TESTS
-            main_porting_tests();
+            main_porting_tests( );
 #else
 #error "Unknown application" ## MAKEFILE_APP
 #endif

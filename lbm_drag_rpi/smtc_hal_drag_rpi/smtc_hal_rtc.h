@@ -77,7 +77,7 @@ void hal_rtc_init( void );
 /*!
  *  De-initializes the MCU RTC peripheral
  */
-void hal_rtc_de_init(void);
+void hal_rtc_deinit( void );
 
 /*!
  * Returns the current RTC time in seconds

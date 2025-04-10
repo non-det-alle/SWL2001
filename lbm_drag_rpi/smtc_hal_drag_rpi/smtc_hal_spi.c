@@ -3,27 +3,33 @@
  *
  * \brief     SPI Hardware Abstraction Layer implementation
  *
- * MIT License
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
- * Copyright (c) 2024 Alessandro Aimi
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Semtech corporation nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -31,7 +37,7 @@
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
-#include <stdbool.h> // bool type
+#include <stdbool.h>  // bool type
 
 #include "smtc_hal_spi.h"
 #include "smtc_hal_mcu.h"
@@ -57,7 +63,7 @@
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-static int spi_handle;
+static int handle;
 
 /*
  * -----------------------------------------------------------------------------
@@ -69,32 +75,32 @@ static int spi_handle;
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void hal_spi_init(const uint32_t id, const hal_gpio_pin_names_t mosi, const hal_gpio_pin_names_t miso,
-                  const hal_gpio_pin_names_t sclk)
+void hal_spi_init( const uint32_t id, const hal_gpio_pin_names_t mosi, const hal_gpio_pin_names_t miso,
+                   const hal_gpio_pin_names_t sclk )
 {
-    spi_handle = spiOpen(0, 500000, 0);
-    if (spi_handle < 0)
+    handle = spiOpen(0, 500000, 0);
+    if (handle < 0)
     {
         mcu_panic();
     }
 }
 
-void hal_spi_de_init(const uint32_t id)
+void hal_spi_deinit( const uint32_t id )
 {
-    if (spiClose(spi_handle) != 0)
+    if (spiClose(handle) != 0)
     {
         // no reset to avoid error-looping
-        mcu_panic_trace();
+        mcu_panic_trace( );
     }
 }
 
-uint16_t hal_spi_in_out(const uint32_t id, const uint16_t out_data)
+uint16_t hal_spi_in_out( const uint32_t id, const uint16_t out_data )
 {
     char in_buf;
     char out_buf = (char)(out_data & 0xFF);
-    if (spiXfer(spi_handle, &out_buf, &in_buf, 1) != 1)
+    if (spiXfer(handle, &out_buf, &in_buf, 1) != 1)
     {
-        mcu_panic();
+        mcu_panic( );
     }
     return in_buf;
 }

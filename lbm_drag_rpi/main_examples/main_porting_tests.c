@@ -70,9 +70,7 @@
 #define NB_LOOP_TEST_SPI 2
 #define NB_LOOP_TEST_CONFIG_RADIO 2
 
-#if defined( SX1272 )
-#define SX127X_VERSION 0x22
-#elif defined( SX1276 )
+#if defined( SX1276 )
 #define SX127X_VERSION 0x12
 #endif
 
@@ -110,7 +108,7 @@
     } while( 0 );
 
 #if defined( SX127X )
-static ralf_t modem_radio = RALF_SX127X_INSTANTIATE( NULL );
+static ralf_t modem_radio = RALF_SX127X_INSTANTIATE( NULL ); // this MUST stay static!
 #else
 #error "Please select radio board.."
 #endif
@@ -168,7 +166,8 @@ static ralf_params_lora_t tx_lora_param = { .sync_word                       = S
                                             .pkt_params.invert_iq_is_on      = false,
                                             .pkt_params.preamble_len_in_symb = 8 };
 #if( ENABLE_TEST_FLASH != 0 )
-static const char* name_context_type[] = { "MODEM", "LR1MAC", "DEVNONCE", "FUOTA", "SECURE_ELEMENT", "STORE_AND_FORWARD" };
+static const char* name_context_type[] = { "MODEM", "KEY_MODEM",      "LORAWAN_STACK",
+                                           "FUOTA", "SECURE_ELEMENT", "STORE_AND_FORWARD" };
 #endif
 
 /*
@@ -216,7 +215,7 @@ void main_porting_tests( void )
     hal_mcu_init( );
 
 #if defined( SX127X )
-    // Get modem radio context
+    // Get modem radio context, do not change!
     modem_radio.ral.context = smtc_modem_get_radio_context();
 #endif
 
@@ -237,7 +236,7 @@ void main_porting_tests( void )
 
     ret = porting_test_timer_irq( );
     if( ret == false )
-        return;
+        return ret;
 
     porting_test_stop_timer( );
 
@@ -262,18 +261,9 @@ void main_porting_tests( void )
     SMTC_HAL_TRACE_MSG_COLOR( "\n MCU RESET => relaunch tests and check if read after reset = write before reset \n\n",
                               HAL_DBG_TRACE_COLOR_BLUE );
 
-    hal_mcu_set_sleep_for_ms( 2000 );
-
-    hal_mcu_reset( );
-
 #endif
 
     SMTC_HAL_TRACE_MSG( "----------------------------------------\nEND \n\n" );
-
-    while( 1 )
-    {
-        hal_mcu_set_sleep_for_ms( 1000 );
-    }
 
     return;
 }
@@ -319,14 +309,14 @@ static bool porting_test_spi( void )
     for( uint16_t i = 0; i < NB_LOOP_TEST_SPI; i++ )
     {
 #if defined( SX127X )
-        uint8_t              chip_version;
-        sx127x_status_t      status;
+        uint8_t         chip_version;
+        sx127x_status_t status;
 
         status = sx127x_read_register( NULL, SX127X_REG_COMMON_VERSION, &chip_version, 1 );
 
         if( status == SX127X_STATUS_OK )
         {
-            if (chip_version != SX127X_VERSION)
+            if( chip_version != SX127X_VERSION )
             {
                 PORTING_TEST_MSG_NOK( " Wrong SX127X chip version code: 0x%02X / get 0x%02X \n",
                                       SX127X_VERSION, chip_version );
@@ -753,7 +743,8 @@ static bool porting_test_timer_irq( void )
         // Do nothing
     }
 
-    smtc_modem_hal_start_timer( timer_ms, timer_irq_callback, NULL );
+    smtc_modem_hal_start_timer( timer_ms, timer_irq_callback,
+                                NULL );  // Warning this function takes ~3,69 ms for STM32L4
 
     // Timeout if irq not raised
     while( ( timer_irq_raised == false ) &&

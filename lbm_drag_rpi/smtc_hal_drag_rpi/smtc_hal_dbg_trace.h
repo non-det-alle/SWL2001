@@ -51,7 +51,7 @@ extern "C" {
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
 
-// clang-format off
+/* clang-format off */
 #define HAL_FEATURE_OFF                             0
 #define HAL_FEATURE_ON                              !HAL_FEATURE_OFF
 
@@ -67,14 +67,14 @@ extern "C" {
 #ifndef HAL_DBG_TRACE_RP
 #define HAL_DBG_TRACE_RP                            HAL_FEATURE_OFF
 #endif
-// clang-format on
+/* clang-format on */
 
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC MACROS -----------------------------------------------------------
  */
 
-// clang-format off
+/* clang-format off */
 #if ( HAL_DBG_TRACE_COLOR == HAL_FEATURE_ON )
     #define HAL_DBG_TRACE_COLOR_BLACK               "\x1B[0;30m"
     #define HAL_DBG_TRACE_COLOR_RED                 "\x1B[0;31m"
@@ -117,13 +117,6 @@ extern "C" {
     do                                                                              \
     {                                                                               \
         SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_GREEN "INFO: " __VA_ARGS__);     \
-        SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_DEFAULT );                       \
-    } while ( 0 );
-
-    #define SMTC_HAL_TRACE_DEBUG( ... )                                             \
-    do                                                                              \
-    {                                                                               \
-        SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_MAGENTA "DEBUG: " __VA_ARGS__);  \
         SMTC_HAL_TRACE_PRINTF( HAL_DBG_TRACE_COLOR_DEFAULT );                       \
     } while ( 0 );
 
@@ -177,7 +170,7 @@ extern "C" {
 
 #endif
 
-// clang-format on
+/* clang-format on */
 
 /*
  * -----------------------------------------------------------------------------

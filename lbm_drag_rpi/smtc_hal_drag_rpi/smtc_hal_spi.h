@@ -83,7 +83,7 @@ void hal_spi_init( const uint32_t id, const hal_gpio_pin_names_t mosi, const hal
  *
  * \param [IN] id   SPI interface id [1:N]
  */
-void hal_spi_de_init( const uint32_t id );
+void hal_spi_deinit( const uint32_t id );
 
 /*!
  * Sends out_data and receives in_data

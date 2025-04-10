@@ -16,4 +16,4 @@ The code depends on the `pigpio.h` library. To install it
 
 ## Build
 
-Clone this repo, run `cd SWL2001/lbm_drag_rpi` followed by `make full_sx1276` to build a simple example (the default main file is under `main_examples/main_periodical_uplink.c`). The built executable is `build_sx1276_DRPi/app_sx1276.elf` and can be transferred into your Raspberry Pi (for example over `ssh` using `scp`).
+Clone this repo, run `cd SWL2001/lbm_drag_rpi` followed by `make full_sx1276` to build a simple example (the default main file is under `main_examples/main_periodical_uplink.c`). The built executable is `build_sx1276_drpi/app_sx1276.elf` and can be transferred into your Raspberry Pi (for example over `ssh` using `scp`).

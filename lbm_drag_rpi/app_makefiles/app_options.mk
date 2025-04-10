@@ -29,12 +29,15 @@ MODEM_APP_REGION ?= nc
 ALLOW_FUOTA ?= no
 FUOTA_VERSION ?= 1
 
-# USE LBM Store and forward (take more RAM on STML4, due to read_modify_write feature)
+# USE LBM Store and forward (take more RAM on STM32L4, due to read_modify_write feature)
 ALLOW_STORE_AND_FORWARD ?= no
 
 #TRACE
 LBM_TRACE ?= yes
 APP_TRACE ?= yes
+# Allow relay 
+ALLOW_RELAY_RX ?= no
+ALLOW_RELAY_TX ?= no
 
 #-----------------------------------------------------------------------------
 # LBM options management
@@ -48,7 +51,7 @@ CRYPTO ?= SOFT
 LBM_NB_OF_STACK ?= 1
 
 # Add any lbm build options (ex: LBM_BUILD_OPTIONS ?= LBM_CLASS_B=yes REGION=ALL)
-LBM_BUILD_OPTIONS ?=
+LBM_BUILD_OPTIONS ?= LBM_CSMA=yes USE_CSMA_BY_DEFAULT=yes
 
 #-----------------------------------------------------------------------------
 # Optimization
@@ -75,7 +78,7 @@ DEBUG_LBM_OPT ?= -O0
 # Makefile Configuration options
 #-----------------------------------------------------------------------------
 
-# Compile for debugging
+# Compile for debugging (sets APP_DEBUG)
 DEBUG ?= no
 
 # Use multithreaded build (make -j)

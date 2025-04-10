@@ -3,27 +3,33 @@
  *
  * \brief     Implements Low Power Timer utilities functions.
  *
- * MIT License
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
- * Copyright (c) 2024 Alessandro Aimi
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Semtech corporation nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -31,8 +37,8 @@
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
-#include <stdint.h>  // C99 types
-#include <stdbool.h> // bool type
+#include <stdint.h>   // C99 types
+#include <stdbool.h>  // bool type
 
 #include "smtc_hal_lp_timer.h"
 #include "smtc_hal_mcu.h"
@@ -51,7 +57,7 @@
  * --- PRIVATE CONSTANTS -------------------------------------------------------
  */
 
-#define HAL_LP_TIMER_NB 2 //!< Number of supported low power timers
+#define HAL_LP_TIMER_NB 2  //!< Number of supported low power timers
 
 /*
  * -----------------------------------------------------------------------------
@@ -65,28 +71,28 @@ typedef struct hal_lp_timer_s
     hal_lp_timer_irq_t tmr_irq;
     bool blocked;
     bool pending;
-} hal_lp_timer_t;
+} lp_timer_t;
 
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-static hal_lp_timer_t lptim[HAL_LP_TIMER_NB];
+static lp_timer_t lptim[HAL_LP_TIMER_NB];
 
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
  */
 
-void hal_pl_timer_handler(int sig, siginfo_t *si, void *uc);
+void pl_timer_handler( int sig, siginfo_t *si, void *uc );
 
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
  */
 
-void hal_lp_timer_init(hal_lp_timer_id_t id)
+void hal_lp_timer_init( hal_lp_timer_id_t id )
 {
     // + 1 is for rtc wakeup timer
     int signo = SIGRTMIN + id + 1;
@@ -97,7 +103,7 @@ void hal_lp_timer_init(hal_lp_timer_id_t id)
     lptim[id].signo = signo;
 
     struct sigaction sa; // establish handler for callback
-    sa.sa_sigaction = hal_pl_timer_handler;
+    sa.sa_sigaction = pl_timer_handler;
     sigemptyset(&sa.sa_mask); // sigs to be blocked during handler execution
     sa.sa_flags = SA_SIGINFO;
     if (sigaction(signo, &sa, NULL) == -1)
@@ -115,7 +121,7 @@ void hal_lp_timer_init(hal_lp_timer_id_t id)
     }
 }
 
-void hal_lp_timer_de_init(hal_lp_timer_id_t id)
+void hal_lp_timer_deinit( hal_lp_timer_id_t id )
 {
     if (timer_delete(lptim[id].handle) == -1)
     {
@@ -134,7 +140,7 @@ void hal_lp_timer_de_init(hal_lp_timer_id_t id)
     }
 }
 
-void hal_lp_timer_start(hal_lp_timer_id_t id, const uint32_t milliseconds, const hal_lp_timer_irq_t *tmr_irq)
+void hal_lp_timer_start( hal_lp_timer_id_t id, const uint32_t milliseconds, const hal_lp_timer_irq_t* tmr_irq )
 {
     lptim[id].tmr_irq = *tmr_irq; // callback assignment
 
@@ -148,7 +154,7 @@ void hal_lp_timer_start(hal_lp_timer_id_t id, const uint32_t milliseconds, const
     }
 }
 
-void hal_lp_timer_stop(hal_lp_timer_id_t id)
+void hal_lp_timer_stop( hal_lp_timer_id_t id )
 {
     lptim[id].tmr_irq = (hal_lp_timer_irq_t){.context = NULL, .callback = NULL};
 
@@ -161,7 +167,7 @@ void hal_lp_timer_stop(hal_lp_timer_id_t id)
     }
 }
 
-void hal_lp_timer_irq_enable(hal_lp_timer_id_t id)
+void hal_lp_timer_irq_enable( hal_lp_timer_id_t id )
 {
     lptim[id].blocked = false;
 
@@ -172,7 +178,7 @@ void hal_lp_timer_irq_enable(hal_lp_timer_id_t id)
     }
 }
 
-void hal_lp_timer_irq_disable(hal_lp_timer_id_t id)
+void hal_lp_timer_irq_disable( hal_lp_timer_id_t id )
 {
     lptim[id].blocked = true;
 }
@@ -182,7 +188,7 @@ void hal_lp_timer_irq_disable(hal_lp_timer_id_t id)
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
 
-void hal_pl_timer_handler(int sig, siginfo_t *si, void *uc)
+void pl_timer_handler( int sig, siginfo_t *si, void *uc )
 {
     int id = si->si_value.sival_int;
 

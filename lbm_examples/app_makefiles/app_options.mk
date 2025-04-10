@@ -74,7 +74,7 @@ LBM_OPT = -Os
 # Compile library and application with debug symbols
 APP_DEBUG ?= no
 
-# Debug optimization (will overwrite APP_OPT and LBM_OPT values in case DEBUG is set)
+# Debug optimization (will overwrite APP_OPT and LBM_OPT values in case APP_DEBUG is set)
 DEBUG_APP_OPT ?= -O0
 DEBUG_LBM_OPT ?= -O0
 

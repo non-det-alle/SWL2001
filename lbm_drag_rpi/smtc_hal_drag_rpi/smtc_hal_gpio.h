@@ -127,7 +127,7 @@ void hal_gpio_init_in( const hal_gpio_pin_names_t pin, const hal_gpio_pull_mode_
 /*!
  * Detaches all GPIO MCU interrupts
  */
-void hal_gpio_irq_de_init( void );
+void hal_gpio_irq_deinit( void );
 
 /*!
  * Attaches given callback to the MCU IRQ handler

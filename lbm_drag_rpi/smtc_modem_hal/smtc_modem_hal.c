@@ -37,8 +37,8 @@
  * --- DEPENDENCIES ------------------------------------------------------------
  */
 
-#include <stdint.h>  // C99 types
-#include <stdbool.h> // bool type
+#include <stdint.h>   // C99 types
+#include <stdbool.h>  // bool type
 
 #include "smtc_modem_hal.h"
 #include "smtc_hal_dbg_trace.h"
@@ -70,7 +70,7 @@
  */
 
 #ifndef MIN
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MIN( a, b ) ( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )
 #endif
 
 /*
@@ -104,76 +104,80 @@
  */
 
 /* ------------ Reset management ------------*/
-void smtc_modem_hal_reset_mcu(void)
+void smtc_modem_hal_reset_mcu( void )
 {
-    hal_mcu_reset();
+    hal_mcu_reset( );
 }
 
 /* ------------ Watchdog management ------------*/
 
-void smtc_modem_hal_reload_wdog(void)
+void smtc_modem_hal_reload_wdog( void )
 {
     // only called by tests
 }
 
 /* ------------ Time management ------------*/
 
-uint32_t smtc_modem_hal_get_time_in_s(void)
+uint32_t smtc_modem_hal_get_time_in_s( void )
 {
-    return hal_rtc_get_time_s();
+    return hal_rtc_get_time_s( );
 }
 
-uint32_t smtc_modem_hal_get_time_in_ms(void)
+uint32_t smtc_modem_hal_get_time_in_ms( void )
 {
-    return hal_rtc_get_time_ms();
+    return hal_rtc_get_time_ms( );
 }
 
 /* ------------ Timer management ------------*/
 
-void smtc_modem_hal_start_timer(const uint32_t milliseconds, void (*callback)(void *context), void *context)
+void smtc_modem_hal_start_timer( const uint32_t milliseconds, void ( *callback )( void* context ), void* context )
 {
-    hal_lp_timer_start(HAL_LP_TIMER_ID_1, milliseconds,
-                       &(hal_lp_timer_irq_t){.context = context, .callback = callback});
+    hal_lp_timer_start( HAL_LP_TIMER_ID_1, milliseconds,
+                        &( hal_lp_timer_irq_t ) { .context = context, .callback = callback } );
 }
 
-void smtc_modem_hal_stop_timer(void)
+void smtc_modem_hal_stop_timer( void )
 {
-    hal_lp_timer_stop(HAL_LP_TIMER_ID_1);
+    hal_lp_timer_stop( HAL_LP_TIMER_ID_1 );
 }
 
 /* ------------ IRQ management ------------*/
 
-void smtc_modem_hal_disable_modem_irq(void)
+void smtc_modem_hal_disable_modem_irq( void )
 {
-    hal_gpio_irq_disable();
-    hal_lp_timer_irq_disable(HAL_LP_TIMER_ID_1);
-    hal_lp_timer_irq_disable(HAL_LP_TIMER_ID_2);
+    hal_gpio_irq_disable( );
+    hal_lp_timer_irq_disable( HAL_LP_TIMER_ID_1 );
+#if ( SX127X )
+    hal_lp_timer_irq_disable( HAL_LP_TIMER_ID_2 );
+#endif
 }
 
-void smtc_modem_hal_enable_modem_irq(void)
+void smtc_modem_hal_enable_modem_irq( void )
 {
-    hal_gpio_irq_enable();
-    hal_lp_timer_irq_enable(HAL_LP_TIMER_ID_1);
-    hal_lp_timer_irq_enable(HAL_LP_TIMER_ID_2);
+    hal_gpio_irq_enable( );
+    hal_lp_timer_irq_enable( HAL_LP_TIMER_ID_1 );
+#if ( SX127X )
+    hal_lp_timer_irq_enable( HAL_LP_TIMER_ID_2 );
+#endif
 }
 
 /* ------------ Context saving management ------------*/
 
-void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_t offset, uint8_t *buffer,
-                                    const uint32_t size)
+void smtc_modem_hal_context_restore( const modem_context_type_t ctx_type, uint32_t offset, uint8_t* buffer,
+                                     const uint32_t size )
 {
     // Offset is only used for fuota and store and forward purpose and for multistack features.
     // To avoid ram consumption the use of hal_nvm_read_modify_write is only done in these cases
-    switch (ctx_type)
+    switch( ctx_type )
     {
     case CONTEXT_MODEM:
-        hal_nvm_read_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_read_buffer( ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size );
         break;
     case CONTEXT_KEY_MODEM:
-        hal_nvm_read_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_read_buffer( ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size );
         break;
     case CONTEXT_LORAWAN_STACK:
-        hal_nvm_read_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
+        hal_nvm_read_buffer( ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size );
         break;
     case CONTEXT_FUOTA:
         // no fuota example on rpi
@@ -182,29 +186,29 @@ void smtc_modem_hal_context_restore(const modem_context_type_t ctx_type, uint32_
         // no store and fw example on rpi
         break;
     case CONTEXT_SECURE_ELEMENT:
-        hal_nvm_read_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_read_buffer( ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size );
         break;
     default:
-        mcu_panic();
+        mcu_panic( );
         break;
     }
 }
 
-void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t offset, const uint8_t *buffer,
-                                  const uint32_t size)
+void smtc_modem_hal_context_store( const modem_context_type_t ctx_type, uint32_t offset, const uint8_t* buffer,
+                                   const uint32_t size )
 {
     // Offset is only used for fuota and store and forward purpose and for multistack features.
     // To avoid ram consumption the use of hal_nvm_read_modify_write is only done in these cases
-    switch (ctx_type)
+    switch( ctx_type )
     {
     case CONTEXT_MODEM:
-        hal_nvm_write_buffer(ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_write_buffer( ADDR_STACK_MODEM_CONTEXT_OFFSET, buffer, size );
         break;
     case CONTEXT_KEY_MODEM:
-        hal_nvm_write_buffer(ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_write_buffer( ADDR_STACK_MODEM_KEY_CONTEXT_OFFSET, buffer, size );
         break;
     case CONTEXT_LORAWAN_STACK:
-        hal_nvm_write_buffer(ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size);
+        hal_nvm_write_buffer( ADDR_STACK_LORAWAN_CONTEXT_OFFSET + offset, buffer, size );
         break;
     case CONTEXT_FUOTA:
         // no fuota example on rpi
@@ -213,85 +217,80 @@ void smtc_modem_hal_context_store(const modem_context_type_t ctx_type, uint32_t 
         // no store and fw example on rpi
         break;
     case CONTEXT_SECURE_ELEMENT:
-        hal_nvm_write_buffer(ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size);
+        hal_nvm_write_buffer( ADDR_STACK_SECURE_ELEMENT_CONTEXT_OFFSET, buffer, size );
         break;
     default:
-        mcu_panic();
+        mcu_panic( );
         break;
     }
 }
 
 /* ------------ crashlog management ------------*/
 
-bool smtc_modem_hal_crashlog_get_status(void)
+bool smtc_modem_hal_crashlog_get_status( void )
 {
     return false;
 }
 
 /* ------------ assert management ------------*/
 
-void smtc_modem_hal_on_panic(uint8_t *func, uint32_t line, const char *fmt, ...)
+void smtc_modem_hal_on_panic( uint8_t* func, uint32_t line, const char* fmt, ... )
 {
-    uint8_t out_buff[255] = {0};
-    uint8_t out_len = snprintf((char *)out_buff, sizeof(out_buff), "%s:%u ", func, line);
+    uint8_t out_buff[255] = { 0 };
+    uint8_t out_len       = snprintf( ( char* ) out_buff, sizeof( out_buff ), "%s:%u ", func, line );
 
     va_list args;
-    va_start(args, fmt);
-    out_len += vsprintf((char *)&out_buff[out_len], fmt, args);
-    va_end(args);
+    va_start( args, fmt );
+    out_len += vsprintf( ( char* ) &out_buff[out_len], fmt, args );
+    va_end( args );
 
-    //smtc_modem_hal_crashlog_store(out_buff, out_len);
+    // smtc_modem_hal_crashlog_store( out_buff, out_len );
 
-    SMTC_HAL_TRACE_ERROR("Modem panic: %s\n", out_buff);
-    smtc_modem_hal_reset_mcu();
+    SMTC_HAL_TRACE_ERROR( "Modem panic: %s\n", out_buff );
+    smtc_modem_hal_reset_mcu( );
 }
 
 /* ------------ Random management ------------*/
 
-uint32_t smtc_modem_hal_get_random_nb_in_range(const uint32_t val_1, const uint32_t val_2)
+uint32_t smtc_modem_hal_get_random_nb_in_range( const uint32_t val_1, const uint32_t val_2 )
 {
-    return hal_rng_get_random_in_range(val_1, val_2);
+    return hal_rng_get_random_in_range( val_1, val_2 );
 }
 
 /* ------------ Radio env management ------------*/
 
-void smtc_modem_hal_irq_config_radio_irq(void (*callback)(void *context), void *context)
+void smtc_modem_hal_irq_config_radio_irq( void ( *callback )( void* context ), void* context )
 {
-    sx127x_t *radio = (sx127x_t *)smtc_modem_get_radio_context();
+#if defined( SX1276 )
+    sx127x_t* radio = ( sx127x_t* ) smtc_modem_get_radio_context( );
 
-    sx127x_irq_attach(radio, callback, context);
+    sx127x_irq_attach( radio, callback, context );
+#endif
 }
 
-void smtc_modem_hal_radio_irq_clear_pending(void)
-{
-    hal_gpio_clear_pending_irq(RADIO_DIO_0);
-    hal_gpio_clear_pending_irq(RADIO_DIO_1);
-    hal_gpio_clear_pending_irq(RADIO_DIO_2);
-}
-
-void smtc_modem_hal_start_radio_tcxo(void)
+void smtc_modem_hal_start_radio_tcxo( void )
 {
     // put here the code that will start the tcxo if needed
 }
 
-void smtc_modem_hal_stop_radio_tcxo(void)
+void smtc_modem_hal_stop_radio_tcxo( void )
 {
     // put here the code that will stop the tcxo if needed
 }
 
-uint32_t smtc_modem_hal_get_radio_tcxo_startup_delay_ms(void)
+uint32_t smtc_modem_hal_get_radio_tcxo_startup_delay_ms( void )
 {
     return 0;
 }
 
-void smtc_modem_hal_set_ant_switch(bool is_tx_on)
+void smtc_modem_hal_set_ant_switch( bool is_tx_on )
 {
     // No antenna switching is used
 }
 
 /* ------------ Environment management ------------*/
 
-uint8_t smtc_modem_hal_get_battery_level(void)
+uint8_t smtc_modem_hal_get_battery_level( void )
 {
     // Please implement according to used board
     // According to LoRaWan 1.0.4 spec:
@@ -301,40 +300,40 @@ uint8_t smtc_modem_hal_get_battery_level(void)
     return 0;
 }
 
-int8_t smtc_modem_hal_get_board_delay_ms(void)
+int8_t smtc_modem_hal_get_board_delay_ms( void )
 {
     return 0;
 }
 
 /* ------------ Trace management ------------*/
 
-void smtc_modem_hal_print_trace(const char *fmt, ...)
+void smtc_modem_hal_print_trace( const char* fmt, ... )
 {
     va_list args;
-    va_start(args, fmt);
-    hal_trace_print(fmt, args);
-    va_end(args);
+    va_start( args, fmt );
+    hal_trace_print( fmt, args );
+    va_end( args );
 }
 
 /* ------------ Needed for Cloud  ------------*/
 
-int8_t smtc_modem_hal_get_temperature(void)
+int8_t smtc_modem_hal_get_temperature( void )
 {
     // Please implement according to used board
     return 25;
 }
 
-uint16_t smtc_modem_hal_get_voltage_mv(void)
+uint16_t smtc_modem_hal_get_voltage_mv( void )
 {
     return 3300;
 }
 
 /* ------------ For Real Time OS compatibility  ------------*/
 
-void smtc_modem_hal_user_lbm_irq(void)
+void smtc_modem_hal_user_lbm_irq( void )
 {
     // Wake up thread
-    hal_mcu_wakeup();
+    hal_mcu_wakeup( );
 }
 /*
  * -----------------------------------------------------------------------------

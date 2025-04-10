@@ -87,7 +87,7 @@ void hal_trace_print( const char* fmt, va_list argp )
     char string[PRINT_BUFFER_SIZE];
     if( 0 < vsprintf( string, fmt, argp ) )  // build string
     {
-        printf("%s", string);
+        printf( "%s", string );
     }
 }
 

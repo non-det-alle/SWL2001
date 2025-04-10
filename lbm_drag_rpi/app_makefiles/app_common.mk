@@ -31,7 +31,7 @@ BIN = $(CP) -O binary -S
 
 ifeq ($(BOARD),DRAGINO_RPI)
 -include app_makefiles/board_drag_rpi.mk
-BOARD_TARGET=DRPi
+BOARD_TARGET=drpi
 endif
 
 #-----------------------------------------------------------------------------
@@ -168,6 +168,17 @@ COMMON_C_DEFS += \
 	-DUSE_FLASH_READ_MODIFY_WRITE\
 	-DUSE_FUOTA
 LBM_BUILD_OPTIONS += LBM_FUOTA=yes LBM_FUOTA_VERSION=$(FUOTA_VERSION)
+endif
+
+ifeq ($(ALLOW_RELAY_TX),yes)
+LBM_BUILD_OPTIONS += LBM_RELAY_TX_ENABLE=yes LBM_CSMA=yes USE_CSMA_BY_DEFAULT=yes
+COMMON_C_DEFS += -DUSE_RELAY_TX
+BUILD_TARGET := $(BUILD_TARGET)_relay_tx
+endif
+
+ifeq ($(ALLOW_RELAY_RX),yes)
+LBM_BUILD_OPTIONS += LBM_RELAY_RX_ENABLE=yes
+BUILD_TARGET := $(BUILD_TARGET)_relay_rx
 endif
 
 ifeq ($(ALLOW_STORE_AND_FORWARD),yes)
