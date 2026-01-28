@@ -166,6 +166,11 @@ void hal_mcu_wakeup( void )
 
 static void mcu_gpio_init( void )
 {
+    if (gpioCfgInterfaces(PI_DISABLE_FIFO_IF | PI_DISABLE_SOCK_IF | PI_DISABLE_ALERT) < 0)
+    {
+        mcu_panic( ); // pigpio initialisation failed.
+    }
+
     if (gpioInitialise() < 0)
     {
         mcu_panic( ); // pigpio initialisation failed.
