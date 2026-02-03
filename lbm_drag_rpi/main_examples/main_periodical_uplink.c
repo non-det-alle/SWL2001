@@ -472,13 +472,9 @@ static void modem_event_callback( void )
 
 static void send_uplink_counter_on_port( uint8_t port )
 {
-    // Send uplink counter on port 102
-    uint8_t buff[4] = { 0 };
-    buff[0]         = ( uplink_counter >> 24 ) & 0xFF;
-    buff[1]         = ( uplink_counter >> 16 ) & 0xFF;
-    buff[2]         = ( uplink_counter >> 8 ) & 0xFF;
-    buff[3]         = ( uplink_counter & 0xFF );
-    ASSERT_SMTC_MODEM_RC( smtc_modem_request_uplink( STACK_ID, port, false, buff, 4 ) );
+    char payload[256];
+    sprintf( payload, "%u: Hello, World!", uplink_counter );
+    ASSERT_SMTC_MODEM_RC( smtc_modem_request_uplink( STACK_ID, port, true, (uint8_t*)payload, strlen(payload) ) );
     // Increment uplink counter
     uplink_counter++;
 }
