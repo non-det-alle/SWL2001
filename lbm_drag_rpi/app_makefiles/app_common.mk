@@ -99,7 +99,6 @@ else
 MEMLOG =
 endif
 
-
 #-----------------------------------------------------------------------------
 # Compilation flags
 #-----------------------------------------------------------------------------
@@ -133,7 +132,7 @@ WFLAG += -fstack-usage
 AS_DEFS =
 
 # Assembly flags
-ASFLAGS += -fno-builtin $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) $(WFLAG)
+ASFLAGS += -fno-builtin $(MCU_FLAGS) $(AS_DEFS) $(AS_INCLUDES) $(OPT) $(WFLAG)
 
 # Common C definitions
 COMMON_C_DEFS +=
@@ -163,7 +162,7 @@ COMMON_C_DEFS += \
 	-DPERF_TEST_ENABLED
 endif
 
-ifeq ($(ALLOW_FUOTA),yes)
+ifeq ($(USE_FUOTA),yes)
 COMMON_C_DEFS += \
 	-DUSE_FLASH_READ_MODIFY_WRITE\
 	-DUSE_FUOTA
@@ -171,13 +170,16 @@ LBM_BUILD_OPTIONS += LBM_FUOTA=yes LBM_FUOTA_VERSION=$(FUOTA_VERSION)
 endif
 
 ifeq ($(ALLOW_RELAY_TX),yes)
-LBM_BUILD_OPTIONS += LBM_RELAY_TX_ENABLE=yes LBM_CSMA=yes USE_CSMA_BY_DEFAULT=yes
+ALLOW_CSMA=yes
+ALLOW_CSMA_AND_ENABLE_AT_BOOT=yes
+LBM_BUILD_OPTIONS += LBM_RELAY_TX_ENABLE=yes
 COMMON_C_DEFS += -DUSE_RELAY_TX
 BUILD_TARGET := $(BUILD_TARGET)_relay_tx
 endif
 
 ifeq ($(ALLOW_RELAY_RX),yes)
 LBM_BUILD_OPTIONS += LBM_RELAY_RX_ENABLE=yes
+COMMON_C_DEFS += -DUSE_RELAY_RX
 BUILD_TARGET := $(BUILD_TARGET)_relay_rx
 endif
 
@@ -197,6 +199,16 @@ COMMON_C_DEFS += \
 	-DHW_DEBUG_PROBE=1
 endif
 
+ifeq ($(ALLOW_CSMA),yes)
+	LBM_BUILD_OPTIONS += LBM_CSMA=yes
+	COMMON_C_DEFS += -DALLOW_CSMA
+
+	ifeq ($(ALLOW_CSMA_AND_ENABLE_AT_BOOT),yes)
+		LBM_BUILD_OPTIONS += USE_CSMA_BY_DEFAULT=yes
+		COMMON_C_DEFS += -DALLOW_CSMA_AND_ENABLE_AT_BOOT
+	endif
+endif
+
 LFS_C_DEFS += -DLFS_CONFIG=lfs_config.h
 LFS_C_DEFS += -DLFS_NO_MALLOC
 #LFS_C_DEFS += -DLFS_YES_TRACE 		# WARNING there are BIG printf strings that generate HardFaults
@@ -214,8 +226,8 @@ LIBS += -lm -lc -lpigpio
 LIBDIR = -L/usr/aarch64-linux-gnu/usr/local/lib
 
 LDFLAGS += $(MCU_FLAGS)
-#LDFLAGS += --specs=nano.specs
-#LDFLAGS += --specs=nosys.specs
+# LDFLAGS += --specs=nano.specs
+# LDFLAGS += --specs=nosys.specs
 LDFLAGS += $(LIBDIR) $(LIBS)
 LDFLAGS += -Wl,--cref # Cross-reference table
 LDFLAGS += -Wl,--print-memory-usage # Display ram/flash memory usage
@@ -227,7 +239,6 @@ LDFLAGS += -Wl,--gc-sections # Garbage collect unused sections
 #-----------------------------------------------------------------------------
 APP_C_SOURCES += \
 	main.c
-
 
 ifeq ($(MODEM_APP),nc)
 APP_C_SOURCES += \
@@ -247,7 +258,7 @@ endif
 COMMON_C_INCLUDES += \
 	-Imain_examples
 
-# For this specific example, a radio access is needed to mimic modem behavior, exceptionnaly include internal folder of lbm
+# For this specific example, a radio access is needed to mimic modem behavior, exceptionally include internal folder of lbm
 ifeq ($(MODEM_APP),PORTING_TESTS)
 MODEM_C_INCLUDES += \
 	-I$(LORA_BASICS_MODEM)/smtc_modem_core/smtc_ralf/src

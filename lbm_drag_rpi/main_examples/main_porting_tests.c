@@ -135,8 +135,9 @@ typedef enum return_code_test_e
 static volatile bool     radio_irq_raised      = false;
 static volatile bool     irq_rx_timeout_raised = false;
 static volatile bool     timer_irq_raised      = false;
-static volatile uint32_t irq_time_ms           = 0;
-static volatile uint32_t irq_time_s            = 0;
+static volatile uint32_t radio_irq_time_ms     = 0;
+static volatile uint32_t radio_irq_time_s      = 0;
+static volatile uint32_t timer_irq_time_ms     = 0;
 
 // LoRa configurations TO NOT receive or transmit
 static ralf_params_lora_t rx_lora_param = { .sync_word                       = SYNC_WORD_NO_RADIO,
@@ -165,7 +166,7 @@ static ralf_params_lora_t tx_lora_param = { .sync_word                       = S
                                             .pkt_params.crc_is_on            = true,
                                             .pkt_params.invert_iq_is_on      = false,
                                             .pkt_params.preamble_len_in_symb = 8 };
-#if( ENABLE_TEST_FLASH != 0 )
+#if ( ENABLE_TEST_FLASH != 0 )
 static const char* name_context_type[] = { "MODEM", "KEY_MODEM",      "LORAWAN_STACK",
                                            "FUOTA", "SECURE_ELEMENT", "STORE_AND_FORWARD" };
 #endif
@@ -194,7 +195,7 @@ static bool porting_test_config_rx_radio( void );
 static bool porting_test_config_tx_radio( void );
 static bool porting_test_sleep_ms( void );
 static bool porting_test_timer_irq_low_power( void );
-#if( ENABLE_TEST_FLASH != 0 )
+#if ( ENABLE_TEST_FLASH != 0 )
 static bool test_context_store_restore( modem_context_type_t context_type );
 static bool porting_test_flash( void );
 #endif
@@ -222,7 +223,7 @@ void main_porting_tests( void )
     // Tests
     SMTC_HAL_TRACE_MSG( "\n\n\nPORTING_TEST example is starting \n\n" );
 
-#if( ENABLE_TEST_FLASH == 0 )
+#if ( ENABLE_TEST_FLASH == 0 )
 
     ret = porting_test_spi( );
     if( ret == false )
@@ -236,7 +237,7 @@ void main_porting_tests( void )
 
     ret = porting_test_timer_irq( );
     if( ret == false )
-        return ret;
+        return;
 
     porting_test_stop_timer( );
 
@@ -556,7 +557,7 @@ static return_code_test_t test_get_time_in_s( void )
         return RC_PORTING_TEST_RELAUNCH;
     }
 
-    uint32_t time = irq_time_s - start_time_s;
+    uint32_t time = radio_irq_time_s - start_time_s;
     if( time == ( rx_timeout_in_ms / 1000 ) )
     {
         PORTING_TEST_MSG_OK( );
@@ -604,7 +605,7 @@ static return_code_test_t test_get_time_in_ms( void )
 
     // To avoid misalignment between symb timeout and real timeout for all radio, a number of symbols smaller than 63 is
     // to be used.
-    rx_lora_param.symb_nb_timeout = 62;
+    rx_lora_param.symb_nb_timeout = 60;
     rx_lora_param.mod_params.sf   = RAL_LORA_SF12;
     rx_lora_param.mod_params.bw   = RAL_LORA_BW_125_KHZ;
 
@@ -659,7 +660,7 @@ static return_code_test_t test_get_time_in_ms( void )
         return RC_PORTING_TEST_RELAUNCH;
     }
 
-    uint32_t time = irq_time_ms - start_time_ms - smtc_modem_hal_get_radio_tcxo_startup_delay_ms( );
+    uint32_t time = radio_irq_time_ms - start_time_ms - smtc_modem_hal_get_radio_tcxo_startup_delay_ms( );
     if( abs( time - symb_time_ms ) <= MARGIN_GET_TIME_IN_MS )
     {
         PORTING_TEST_MSG_OK( );
@@ -759,7 +760,7 @@ static bool porting_test_timer_irq( void )
         return false;
     }
 
-    uint32_t time = irq_time_ms - start_time_ms;
+    uint32_t time = timer_irq_time_ms - start_time_ms;
 
     if( ( time >= timer_ms ) && ( time <= timer_ms + MARGIN_TIMER_IRQ_IN_MS ) )
     {
@@ -1263,7 +1264,7 @@ static bool porting_test_timer_irq_low_power( void )
         return false;
     }
 
-    uint32_t time = irq_time_ms - start_time_ms;
+    uint32_t time = timer_irq_time_ms - start_time_ms;
     if( ( time >= timer_ms ) && ( time <= timer_ms + MARGIN_TIMER_IRQ_IN_MS ) )
     {
         PORTING_TEST_MSG_OK( );
@@ -1283,7 +1284,7 @@ static bool porting_test_timer_irq_low_power( void )
  * -----------------------------------------------------------------------------
  * --- FLASH PORTING TESTS -----------------------------------------------------
  */
-#if( ENABLE_TEST_FLASH != 0 )
+#if ( ENABLE_TEST_FLASH != 0 )
 
 /**
  * @brief Test read/write context in flash
@@ -1432,7 +1433,7 @@ static void radio_tx_irq_callback( void* obj )
     UNUSED( obj );
     // ral_irq_t radio_irq = 0;
 
-    irq_time_ms = smtc_modem_hal_get_time_in_ms( );
+    radio_irq_time_ms = smtc_modem_hal_get_time_in_ms( );
 
     radio_irq_raised = true;
 
@@ -1455,7 +1456,7 @@ static void radio_rx_irq_callback( void* obj )
     UNUSED( obj );
 
     ral_irq_t radio_irq = 0;
-    irq_time_ms         = smtc_modem_hal_get_time_in_ms( );
+    radio_irq_time_ms   = smtc_modem_hal_get_time_in_ms( );
     radio_irq_raised    = true;
 
     if( ral_get_irq_status( &( modem_radio.ral ), &radio_irq ) != RAL_STATUS_OK )
@@ -1485,7 +1486,7 @@ static void radio_irq_callback_get_time_in_s( void* obj )
 {
     UNUSED( obj );
     ral_irq_t radio_irq = 0;
-    irq_time_s          = smtc_modem_hal_get_time_in_s( );
+    radio_irq_time_s    = smtc_modem_hal_get_time_in_s( );
     radio_irq_raised    = true;
 
     if( ral_get_irq_status( &( modem_radio.ral ), &radio_irq ) != RAL_STATUS_OK )
@@ -1513,8 +1514,8 @@ static void radio_irq_callback_get_time_in_s( void* obj )
 static void timer_irq_callback( void* obj )
 {
     UNUSED( obj );
-    irq_time_ms      = smtc_modem_hal_get_time_in_ms( );
-    timer_irq_raised = true;
+    timer_irq_time_ms = smtc_modem_hal_get_time_in_ms( );
+    timer_irq_raised  = true;
 }
 
 /* --- EOF ------------------------------------------------------------------ */

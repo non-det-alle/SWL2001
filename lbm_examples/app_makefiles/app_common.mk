@@ -94,10 +94,6 @@ BUILD_TARGET := $(subst $(COMMA),_,$(BUILD_TARGET))
 # Debug
 #-----------------------------------------------------------------------------
 
-ifeq ($(DEBUG),yes)
-APP_DEBUG=yes
-endif
-
 # Application build optimization
 ifeq ($(APP_DEBUG),yes)
 OPT = $(DEBUG_APP_OPT) -g

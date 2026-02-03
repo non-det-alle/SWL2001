@@ -268,6 +268,12 @@ void smtc_modem_hal_irq_config_radio_irq( void ( *callback )( void* context ), v
 #endif
 }
 
+bool smtc_modem_external_stack_currently_use_radio( void )
+{
+    // return false if the radio is available for the lbm stack
+    return false;
+}
+
 void smtc_modem_hal_start_radio_tcxo( void )
 {
     // put here the code that will start the tcxo if needed

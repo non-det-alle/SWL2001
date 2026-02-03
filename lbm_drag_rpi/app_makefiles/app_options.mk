@@ -26,7 +26,7 @@ MODEM_APP ?= nc
 MODEM_APP_REGION ?= nc
 
 # Allow fuota (take more RAM, due to read_modify_write feature) and force lbm build with fuota
-ALLOW_FUOTA ?= no
+USE_FUOTA ?= no
 FUOTA_VERSION ?= 1
 
 # USE LBM Store and forward (take more RAM on STM32L4, due to read_modify_write feature)
@@ -35,9 +35,13 @@ ALLOW_STORE_AND_FORWARD ?= no
 #TRACE
 LBM_TRACE ?= yes
 APP_TRACE ?= yes
-# Allow relay 
+# Allow relay
 ALLOW_RELAY_RX ?= no
 ALLOW_RELAY_TX ?= no
+
+# Allow CSMA
+ALLOW_CSMA ?= yes
+ALLOW_CSMA_AND_ENABLE_AT_BOOT ?= yes
 
 #-----------------------------------------------------------------------------
 # LBM options management
@@ -46,12 +50,15 @@ ALLOW_RELAY_TX ?= no
 # CRYPTO Management
 CRYPTO ?= SOFT
 
-# Multistack 
+# Multistack
 # Note: if more than one stack is used, more ram will be used for nvm context saving due to read_modify_write feature
 LBM_NB_OF_STACK ?= 1
 
-# Add any lbm build options (ex: LBM_BUILD_OPTIONS ?= LBM_CLASS_B=yes REGION=ALL)
-LBM_BUILD_OPTIONS ?= LBM_CSMA=yes USE_CSMA_BY_DEFAULT=yes
+# Add any lbm build options
+# ex: LBM_BUILD_OPTIONS ?= LBM_CLASS_B=yes REGION=ALL
+# ex: LBM_BUILD_OPTIONS ?= REGION=EU_868
+
+LBM_BUILD_OPTIONS ?=
 
 #-----------------------------------------------------------------------------
 # Optimization
@@ -70,16 +77,13 @@ LBM_OPT = -Os
 # Compile library and application with debug symbols
 APP_DEBUG ?= no
 
-# Debug optimization (will overwrite APP_OPT and LBM_OPT values in case APP_DEBUG is set)
+# Debug optimization (will overwrite APP_OPT and LBM_OPT values in case DEBUG is set)
 DEBUG_APP_OPT ?= -O0
 DEBUG_LBM_OPT ?= -O0
 
 #-----------------------------------------------------------------------------
 # Makefile Configuration options
 #-----------------------------------------------------------------------------
-
-# Compile for debugging (sets APP_DEBUG)
-DEBUG ?= no
 
 # Use multithreaded build (make -j)
 MULTITHREAD ?= yes

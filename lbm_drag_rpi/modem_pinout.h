@@ -58,21 +58,21 @@ extern "C" {
 /********************************************************************************/
 /*                         Application     dependant                            */
 /********************************************************************************/
-/* clang-format off */
+// clang-format off
 
 //Radio specific pinout and peripherals
-#define RADIO_NRST              P_17
-#define RADIO_SPI_MOSI          P_10
-#define RADIO_SPI_MISO          P_9
-#define RADIO_SPI_SCLK          P_11
-#define RADIO_NSS               P_25
-#define RADIO_DIO_0             P_4
-#define RADIO_DIO_1             P_23
-#define RADIO_DIO_2             P_24
+#define RADIO_NRST P_17
+#define RADIO_SPI_MOSI P_10
+#define RADIO_SPI_MISO P_9
+#define RADIO_SPI_SCLK P_11
+#define RADIO_NSS P_25
+#define RADIO_DIO_0 P_4
+#define RADIO_DIO_1 P_23
+#define RADIO_DIO_2 P_24
 
-#define RADIO_SPI_ID            0
+#define RADIO_SPI_ID 0
 
-/* clang-format on */
+// clang-format on
 
 /*
  * -----------------------------------------------------------------------------
