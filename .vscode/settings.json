@@ -5,5 +5,8 @@
         "random": "c",
         "memory": "c"
     },
-    "editor.formatOnSave": false
+    "editor.formatOnSave": false,
+    "workbench.editorAssociations": {
+        "*.md": "default"
+    }
 }
