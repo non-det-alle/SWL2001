@@ -13,9 +13,7 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-set(CMAKE_LINK_LIBRARIES_ONLY_TARGETS ON)
-
-add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter)
+add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -Warray-bounds=0)
 
 # Set default build type
 set(default_build_type "Release")
@@ -138,6 +136,7 @@ target_link_libraries(lbm_example.elf PRIVATE
     lora_basics_modem_core
     radio_hal
     smtc_modem_hal_implem
+    m c
 )
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../")

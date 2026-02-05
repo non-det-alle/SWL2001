@@ -20,11 +20,9 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(SMTC_HAL_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 set(CMAKE_C_FLAGS_INIT "\
--mcpu=cortex-a53 -mtune=cortex-a53 \
+-mcpu=cortex-a53 -mtune=cortex-a53 -fno-builtin \
 -fno-unroll-loops -ffast-math -ftree-vectorize -fomit-frame-pointer \
 -fdata-sections -ffunction-sections -falign-functions=4 \
 -D_POSIX_C_SOURCE=199309L -D_XOPEN_SOURCE=600 \
 "
 )
-
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-lc -Wl,--gc-sections -Wl,--print-memory-usage")
